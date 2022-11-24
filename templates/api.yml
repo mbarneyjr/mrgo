@@ -94,7 +94,7 @@ Resources:
     Properties:
       ApiId: !Ref Api
       DomainName: !Ref ApiGatewayDomainName
-      Stage: !Ref EnvironmentName
+      Stage: !Ref ApiStage
 
   ApiDnsRecord:
     Type: AWS::Route53::RecordSet

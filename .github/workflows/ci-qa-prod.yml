@@ -44,7 +44,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-region: us-east-2
-          role-to-assume: arn:aws:iam::${{ env.QA_ACCOUNT_ID }}:role/github-action
+          role-to-assume: arn:aws:iam::${{ env.QA_ACCOUNT_ID }}:role/github-actions
           role-session-name: GitHubActions-${{ github.run_id }}
       - name: Install dependencies
         run: |
@@ -77,7 +77,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-region: us-east-2
-          role-to-assume: arn:aws:iam::${{ env.QA_ACCOUNT_ID }}:role/github-action
+          role-to-assume: arn:aws:iam::${{ env.QA_ACCOUNT_ID }}:role/github-actions
           role-session-name: GitHubActions-${{ github.run_id }}
       - name: Install dependencies
         run: |
@@ -102,7 +102,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-region: us-east-2
-          role-to-assume: arn:aws:iam::${{ env.QA_ACCOUNT_ID }}:role/github-action
+          role-to-assume: arn:aws:iam::${{ env.QA_ACCOUNT_ID }}:role/github-actions
           role-session-name: GitHubActions-${{ github.run_id }}
       - name: Install dependencies
         run: |
@@ -131,7 +131,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-region: us-east-2
-          role-to-assume: arn:aws:iam::${{ env.PROD_ACCOUNT_ID }}:role/github-action
+          role-to-assume: arn:aws:iam::${{ env.PROD_ACCOUNT_ID }}:role/github-actions
           role-session-name: GitHubActions-${{ github.run_id }}
       - name: Install dependencies
         run: |
@@ -154,7 +154,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-region: us-east-2
-          role-to-assume: arn:aws:iam::${{ env.PROD_ACCOUNT_ID }}:role/github-action
+          role-to-assume: arn:aws:iam::${{ env.PROD_ACCOUNT_ID }}:role/github-actions
           role-session-name: GitHubActions-${{ github.run_id }}
       - name: Install dependencies
         run: |

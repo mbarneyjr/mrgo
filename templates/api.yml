@@ -1,0 +1,141 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The application name that is being deployed
+  EnvironmentName:
+    Type: String
+    Description: The environment in which the stack will be deployed
+
+
+Globals:
+  Function:
+    Runtime: nodejs16.x
+    MemorySize: 1024
+    Timeout: 5
+    Tracing: PassThrough
+    CodeUri: ../artifacts/dist.zip
+    Environment:
+      Variables:
+        APPLICATION_NAME: !Ref ApplicationName
+        ENVIRONMENT_NAME: !Ref EnvironmentName
+
+
+Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+
+  GetDocumentation:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-get-documentation
+      Handler: handlers/api/documentation.handler
+      Role: !GetAtt LambdaRole.Arn
+  GetDocumentationLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetDocumentation}
+
+  ApiServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+      Policies:
+        - PolicyName: !Sub API_Service_Role_Policy_${EnvironmentName}-${AWS::Region}
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action: lambda:InvokeFunction
+                Effect: Allow
+                Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
+
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${ApplicationName}-${EnvironmentName}
+      RetentionInDays: 7
+
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref EnvironmentName
+      AccessLogSettings:
+        DestinationArn: !GetAtt ApiLogGroup.Arn
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "errorResponseType":"$context.error.responseType", "message":"$context.error.message", "integrationErrorMessage":"$context.integrationErrorMessage", "authorizerError":"$context.authorizer.error" }'
+      DefinitionBody:
+        openapi: '3.0.1'
+        info:
+          title: !Sub ${ApplicationName}-${EnvironmentName}-api
+          description: Serverless API
+          version: '1.0'
+        paths:
+          /docs:
+            get:
+              operationId: getDocumentation
+              summary: Get OpenAPI spec
+              description: Get the OpenAPI specification as HTML or JSON.
+              x-amazon-apigateway-integration:
+                connectionType: INTERNET
+                credentials: !GetAtt ApiServiceRole.Arn
+                httpMethod: POST
+                payloadFormatVersion: '2.0'
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetDocumentation.Arn}/invocations
+              parameters:
+                - in: query
+                  name: format
+                  description: The format to return the openapi spec (json, default=html)
+                  schema: { type: string }
+              responses:
+                '200': { $ref: '#/components/responses/getDocumentationResponse' }
+        components:
+          requestBodies: {}
+          responses:
+            getDocumentationResponse:
+              description: GET /docs response
+              content:
+                text/html:
+                  schema:
+                    $ref: '#/components/schemas/documentationHtml'
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/documentationJson'
+          schemas:
+            documentationHtml:
+              type: string
+              format: html
+            documentationJson:
+              type: object
+        x-amazon-apigateway-request-validator: basic
+        x-amazon-apigateway-request-validators:
+          basic:
+            validateRequestBody: true
+            validateRequestParameters: true
+
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL for the API
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}/

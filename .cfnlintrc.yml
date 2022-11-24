@@ -1,0 +1,9 @@
+templates:
+  - template.yml
+  - templates/*.yml
+include_checks:
+  - I
+ignore_checks:
+  - I3011 # https://github.com/aws/serverless-application-model/issues/1590
+  - I3042 # https://github.com/aws/serverless-application-model/issues/1590
+  - W3002 # ignore 'package' requirement warnings

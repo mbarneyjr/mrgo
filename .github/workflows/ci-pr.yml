@@ -19,6 +19,7 @@ env:
   ARTIFACT_PREFIX: mrgo
   CHANGE_SET_NAME: release-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}
   CHANGE_SET_DESCRIPTION: ${{ github.event.pull_request.title }}
+  HOSTED_ZONE_NAME: dev.mrgo.io
 
 permissions:
   id-token: write
@@ -82,6 +83,7 @@ jobs:
       - get_short_ref
     env:
       ENVIRONMENT_NAME: ${{ needs.get_short_ref.outputs.short_ref }}
+      DOMAIN_NAME: ${{ needs.get_short_ref.outputs.short_ref }}.dev.mrgo.io
     runs-on: ubuntu-latest
     container: ghcr.io/mbarneyjr/ci-docker-image:latest
     steps:

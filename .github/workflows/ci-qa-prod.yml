@@ -64,6 +64,8 @@ jobs:
     environment: qa
     env:
       ENVIRONMENT_NAME: qa
+      HOSTED_ZONE_NAME: qa.mrgo.io
+      DOMAIN_NAME: qa.mrgo.io
     steps:
       - uses: actions/checkout@v3
       - name: Download artifacts
@@ -114,6 +116,8 @@ jobs:
     container: ghcr.io/mbarneyjr/ci-docker-image:latest
     env:
       ENVIRONMENT_NAME: prod
+      HOSTED_ZONE_NAME: mrgo.io
+      DOMAIN_NAME: mrgo.io
     outputs:
       no_changes: ${{ steps.create_change_set.outputs.no_changes }}
     steps:

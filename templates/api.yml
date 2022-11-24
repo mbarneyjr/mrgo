@@ -9,6 +9,15 @@ Parameters:
   EnvironmentName:
     Type: String
     Description: The environment in which the stack will be deployed
+  HostedZoneName:
+    Type: String
+    Description: The name of the hosted zone where DNS should be placed
+  DomainName:
+    Type: String
+    Description: The domain name the application will be behind
+  CertificateArn:
+    Type: String
+    Description: The ARN of the ACM certificate
 
 
 Globals:
@@ -70,6 +79,32 @@ Resources:
               - Action: lambda:InvokeFunction
                 Effect: Allow
                 Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
+
+  ApiGatewayDomainName:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: !Sub api.${DomainName}
+      DomainNameConfigurations:
+        - EndpointType: REGIONAL
+          CertificateArn: !Ref CertificateArn
+          CertificateName: !Sub ${ApplicationName}-${EnvironmentName}-cert
+
+  ApiGatewayMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      ApiId: !Ref Api
+      DomainName: !Ref ApiGatewayDomainName
+      Stage: !Ref EnvironmentName
+
+  ApiDnsRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Sub '{{resolve:ssm:/dns/${HostedZoneName}/hosted-zone-id}}'
+      Type: A
+      Name: !Sub api.${DomainName}.
+      AliasTarget:
+        HostedZoneId: !GetAtt ApiGatewayDomainName.RegionalHostedZoneId
+        DNSName: !GetAtt ApiGatewayDomainName.RegionalDomainName
 
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
@@ -138,4 +173,4 @@ Resources:
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL for the API
-    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}/
+    Value: !Sub https://api.${DomainName}/

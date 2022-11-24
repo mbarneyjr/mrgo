@@ -8,9 +8,23 @@ Parameters:
   EnvironmentName:
     Type: String
     Description: The environment in which the stack will be deployed
+  HostedZoneName:
+    Type: String
+    Description: The name of the hosted zone where DNS should be placed
+  DomainName:
+    Type: String
+    Description: The domain name the application will be behind
 
 
 Resources:
+  Cert:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/cert.yml
+      Parameters:
+        HostedZoneName: !Ref HostedZoneName
+        DomainName: !Ref DomainName
+
   Api:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -18,6 +32,9 @@ Resources:
       Parameters:
         ApplicationName: !Ref ApplicationName
         EnvironmentName: !Ref EnvironmentName
+        HostedZoneName: !Ref HostedZoneName
+        DomainName: !Ref DomainName
+        CertificateArn: !GetAtt Cert.Outputs.CertificateArn
 
 
 Outputs:

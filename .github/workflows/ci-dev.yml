@@ -13,6 +13,8 @@ env:
   ARTIFACT_PREFIX: mrgo
   CHANGE_SET_NAME: release-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}
   CHANGE_SET_DESCRIPTION: ${{ github.event.head_commit.message }}
+  HOSTED_ZONE_NAME: dev.mrgo.io
+  DOMAIN_NAME: dev.mrgo.io
 
 permissions:
   id-token: write

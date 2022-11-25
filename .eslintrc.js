@@ -18,6 +18,7 @@ module.exports = {
     'indent': ['error', 2],
     'quotes': ['error', 'single'],
     'quote-props': ['error', 'consistent-as-needed'],
+    'arrow-body-style': 'off',
     'import/extensions': 'off',
     'import/prefer-default-export': 'off',
     'import/no-cycle': 'off',

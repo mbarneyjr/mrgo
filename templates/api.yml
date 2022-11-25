@@ -59,6 +59,61 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${GetDocumentation}
 
+  ListUrls:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-list-urls
+      Handler: handlers/api/urls.listHandler
+      Role: !GetAtt LambdaRole.Arn
+  ListUrlsLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ListUrls}
+
+  CreateUrl:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-create-url
+      Handler: handlers/api/urls.createHandler
+      Role: !GetAtt LambdaRole.Arn
+  CreateUrlLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${CreateUrl}
+
+  GetUrl:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-get-url
+      Handler: handlers/api/urls.getHandler
+      Role: !GetAtt LambdaRole.Arn
+  GetUrlLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetUrl}
+
+  UpdateUrl:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-put-url
+      Handler: handlers/api/urls.putHandler
+      Role: !GetAtt LambdaRole.Arn
+  UpdateUrlLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${UpdateUrl}
+
+  DeleteUrl:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-delete-url
+      Handler: handlers/api/urls.deleteHandler
+      Role: !GetAtt LambdaRole.Arn
+  DeleteUrlLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${DeleteUrl}
+
   ApiServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -145,6 +200,110 @@ Resources:
                   schema: { type: string }
               responses:
                 '200': { $ref: '#/components/responses/getDocumentationResponse' }
+          /urls:
+            get:
+              operationId: listUrls
+              summary: List URLS
+              description: List all registered URLs for the authenticated user
+              x-amazon-apigateway-integration:
+                connectionType: INTERNET
+                credentials: !GetAtt ApiServiceRole.Arn
+                httpMethod: POST
+                payloadFormatVersion: '2.0'
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListUrls.Arn}/invocations
+              parameters:
+                - in: query
+                  name: nextToken
+                  description: A token used to query the next page of results
+                  schema: { type: string }
+              responses:
+                '200': { $ref: '#/components/responses/listUrlsResponse' }
+            post:
+              operationId: createUrl
+              summary: Create a URL redirect
+              description: Create a URL redirect for the authenticated user
+              x-amazon-apigateway-integration:
+                connectionType: INTERNET
+                credentials: !GetAtt ApiServiceRole.Arn
+                httpMethod: POST
+                payloadFormatVersion: '2.0'
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateUrl.Arn}/invocations
+              requestBody:
+                description: POST /urls request
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/url'
+              responses:
+                '200': { $ref: '#/components/responses/createUrlResponse' }
+          /urls/{urlName}:
+            get:
+              operationId: getUrl
+              summary: Get a URL
+              description: Get a specific URL for the authenticated user
+              x-amazon-apigateway-integration:
+                connectionType: INTERNET
+                credentials: !GetAtt ApiServiceRole.Arn
+                httpMethod: POST
+                payloadFormatVersion: '2.0'
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetUrl.Arn}/invocations
+              parameters:
+                - in: path
+                  name: urlName
+                  description: The name of the URL
+                  schema: { type: string }
+                  required: true
+              responses:
+                '200': { $ref: '#/components/responses/getUrlResponse' }
+            put:
+              operationId: updateUrl
+              summary: Update a URL
+              description: Update a specific url for the authenticated user
+              x-amazon-apigateway-integration:
+                connectionType: INTERNET
+                credentials: !GetAtt ApiServiceRole.Arn
+                httpMethod: POST
+                payloadFormatVersion: '2.0'
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateUrl.Arn}/invocations
+              parameters:
+                - in: path
+                  name: urlName
+                  description: The name of the URL
+                  schema: { type: string }
+                  required: true
+              requestBody:
+                description: PUT /urls/{urlId} request
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/url'
+              responses:
+                '200': { $ref: '#/components/responses/updateUrlResponse' }
+            delete:
+              operationId: deleteUrl
+              summary: Delete a URL
+              description: Delete a specific url for the authenticated user
+              x-amazon-apigateway-integration:
+                connectionType: INTERNET
+                credentials: !GetAtt ApiServiceRole.Arn
+                httpMethod: POST
+                payloadFormatVersion: '2.0'
+                type: aws_proxy
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteUrl.Arn}/invocations
+              parameters:
+                - in: path
+                  name: urlName
+                  description: The name of the URL
+                  schema: { type: string }
+                  required: true
+              responses:
+                '200': { $ref: '#/components/responses/deleteUrlResponse' }
         components:
           requestBodies: {}
           responses:
@@ -157,12 +316,72 @@ Resources:
                 application/json:
                   schema:
                     $ref: '#/components/schemas/documentationJson'
+            listUrlsResponse:
+              description: GET /urls response
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/paginatedUrlList'
+            createUrlResponse:
+              description: POST /urls response
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/url'
+            getUrlResponse:
+              description: GET /urls/{urlId} response
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/url'
+            updateUrlResponse:
+              description: PUT /urls/{urlId} response
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/url'
+            deleteUrlResponse:
+              description: DELETE /urls/{urlId} response
           schemas:
             documentationHtml:
               type: string
               format: html
             documentationJson:
               type: object
+            paginatedUrlList:
+              type: object
+              properties:
+                urls:
+                  $ref: '#/components/schemas/urlList'
+                nextToken:
+                  type: string
+            urlList:
+              type: array
+              items:
+                $ref: '#/components/schemas/url'
+            url:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the ID of the URL (slug that's used to redirect)
+                  readOnly: true
+                name:
+                  type: string
+                  description: the user-defined name of the URL
+                description:
+                  type: string
+                  description: the user-defined description of the URL
+                target:
+                  type: string
+                  description: the target https URL to redirect to
+                status:
+                  type: string
+                  enum:
+                    - ACTIVE
+                    - INACTIVE
+                    - DELETED
+                  description: the status of the URL
         x-amazon-apigateway-request-validator: basic
         x-amazon-apigateway-request-validators:
           basic:

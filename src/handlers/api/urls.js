@@ -1,12 +1,9 @@
+const { apiWrapper } = require('../../lib/api/wrapper');
 const urlsLib = require('../../lib/data/urls');
+const errors = require('../../lib/errors');
 
-/**
- * @param {import('aws-lambda').APIGatewayProxyEventV2} event
- * @param {import('aws-lambda').Context} context
- * @returns {Promise<import('aws-lambda').APIGatewayProxyResultV2>}
- */
 /* eslint-disable no-unused-vars */
-exports.listHandler = async (event, context) => {
+exports.listHandler = apiWrapper(async (event, context) => {
   const urls = await urlsLib.listUrls();
   return {
     statusCode: 200,
@@ -15,59 +12,40 @@ exports.listHandler = async (event, context) => {
       nextToken: urls.nextToken,
     }),
   };
-};
+});
 
-/**
- * @param {import('aws-lambda').APIGatewayProxyEventV2} event
- * @param {import('aws-lambda').Context} context
- * @returns {Promise<import('aws-lambda').APIGatewayProxyResultV2>}
- */
 /* eslint-disable no-unused-vars */
-exports.createHandler = async (event, context) => {
+exports.createHandler = apiWrapper(async (event, context) => {
   const url = await urlsLib.createUrl();
   return {
     statusCode: 200,
     body: JSON.stringify(url),
   };
-};
+});
 
-/**
- * @param {import('aws-lambda').APIGatewayProxyEventV2} event
- * @param {import('aws-lambda').Context} context
- * @returns {Promise<import('aws-lambda').APIGatewayProxyResultV2>}
- */
 /* eslint-disable no-unused-vars */
-exports.getHandler = async (event, context) => {
+exports.getHandler = apiWrapper(async (event, context) => {
+  if (event?.pathParameters?.urlId === 'notfound') throw new errors.NotFoundError('the requested url is not found');
   const url = await urlsLib.getUrl();
   return {
     statusCode: 200,
     body: JSON.stringify(url),
   };
-};
+});
 
-/**
- * @param {import('aws-lambda').APIGatewayProxyEventV2} event
- * @param {import('aws-lambda').Context} context
- * @returns {Promise<import('aws-lambda').APIGatewayProxyResultV2>}
- */
 /* eslint-disable no-unused-vars */
-exports.putHandler = async (event, context) => {
+exports.putHandler = apiWrapper(async (event, context) => {
   const url = await urlsLib.putUrl();
   return {
     statusCode: 200,
     body: JSON.stringify(url),
   };
-};
+});
 
-/**
- * @param {import('aws-lambda').APIGatewayProxyEventV2} event
- * @param {import('aws-lambda').Context} context
- * @returns {Promise<import('aws-lambda').APIGatewayProxyResultV2>}
- */
 /* eslint-disable no-unused-vars */
-exports.deleteHandler = async (event, context) => {
+exports.deleteHandler = apiWrapper(async (event, context) => {
   await urlsLib.deleteUrl();
   return {
     statusCode: 200,
   };
-};
+});

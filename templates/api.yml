@@ -239,7 +239,7 @@ Resources:
                       $ref: '#/components/schemas/url'
               responses:
                 '200': { $ref: '#/components/responses/createUrlResponse' }
-          /urls/{urlName}:
+          /urls/{urlId}:
             get:
               operationId: getUrl
               summary: Get a URL
@@ -253,7 +253,7 @@ Resources:
                 uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetUrl.Arn}/invocations
               parameters:
                 - in: path
-                  name: urlName
+                  name: urlId
                   description: The name of the URL
                   schema: { type: string }
                   required: true
@@ -272,7 +272,7 @@ Resources:
                 uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateUrl.Arn}/invocations
               parameters:
                 - in: path
-                  name: urlName
+                  name: urlId
                   description: The name of the URL
                   schema: { type: string }
                   required: true
@@ -298,7 +298,7 @@ Resources:
                 uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteUrl.Arn}/invocations
               parameters:
                 - in: path
-                  name: urlName
+                  name: urlId
                   description: The name of the URL
                   schema: { type: string }
                   required: true
@@ -382,11 +382,6 @@ Resources:
                     - INACTIVE
                     - DELETED
                   description: the status of the URL
-        x-amazon-apigateway-request-validator: basic
-        x-amazon-apigateway-request-validators:
-          basic:
-            validateRequestBody: true
-            validateRequestParameters: true
 
 
 Outputs:

@@ -17,6 +17,14 @@ Parameters:
 
 
 Resources:
+  Data:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/data.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+
   Cert:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -35,6 +43,8 @@ Resources:
         HostedZoneName: !Ref HostedZoneName
         DomainName: !Ref DomainName
         CertificateArn: !GetAtt Cert.Outputs.CertificateArn
+        TableArn: !GetAtt Data.Outputs.TableArn
+        TableName: !GetAtt Data.Outputs.TableName
 
 
 Outputs:

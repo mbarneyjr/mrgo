@@ -25,12 +25,12 @@ describe('src/lib/api/wrapper.js', async () => {
     });
   });
 
-  describe('invalid', async () => {
-    it('correctly constructs an invalid error', async () => {
-      const error = new errors.InvalidError('my invalid message');
+  describe('validation', async () => {
+    it('correctly constructs a validation error', async () => {
+      const error = new errors.ValidationError('my invalid message');
       expect(error.message).to.equal('my invalid message');
-      expect(error.code).to.equal(errors.InvalidError.errorCode);
-      expect(error.statusCode).to.equal(errors.InvalidError.statusCode);
+      expect(error.code).to.equal(errors.ValidationError.errorCode);
+      expect(error.statusCode).to.equal(errors.ValidationError.statusCode);
     });
   });
 

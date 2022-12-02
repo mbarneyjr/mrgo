@@ -1,9 +1,9 @@
 const BaseError = require('./base');
-const InvalidError = require('./invalid');
+const ValidationError = require('./validation');
 const NotFoundError = require('./not-found');
 
 module.exports = {
   BaseError,
-  InvalidError,
+  ValidationError,
   NotFoundError,
 };

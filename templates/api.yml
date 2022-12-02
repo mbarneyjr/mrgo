@@ -18,6 +18,12 @@ Parameters:
   CertificateArn:
     Type: String
     Description: The ARN of the ACM certificate
+  TableArn:
+    Type: String
+    Description: The ARN of the dynamodb table
+  TableName:
+    Type: String
+    Description: The name of the dynamodb table
 
 
 Globals:
@@ -31,6 +37,7 @@ Globals:
       Variables:
         APPLICATION_NAME: !Ref ApplicationName
         ENVIRONMENT_NAME: !Ref EnvironmentName
+        TABLE_NAME: !Ref TableName
 
 
 Resources:
@@ -47,6 +54,23 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      Policies:
+        - PolicyName: allow-dynamo-access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:BatchGetItem
+                  - dynamodb:BatchWriteItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                Resource:
+                  - !Sub ${TableArn}
+                  - !Sub ${TableArn}/index/*
 
   GetDocumentation:
     Type: AWS::Serverless::Function

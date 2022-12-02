@@ -28,9 +28,9 @@ Parameters:
 
 Globals:
   Function:
-    Runtime: nodejs16.x
+    Runtime: nodejs18.x
     MemorySize: 1024
-    Timeout: 5
+    Timeout: 15
     Tracing: PassThrough
     CodeUri: ../artifacts/dist.zip
     Environment:

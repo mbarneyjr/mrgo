@@ -8,7 +8,6 @@
   "license": "ISC",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.101",
-    "aws-sdk": "^2.1109.0",
     "axios": "^0.27.2",
     "cfn-changeset-viewer": "^0.0.3",
     "cfn-event-tailer": "^0.0.2",

@@ -351,7 +351,10 @@ Resources:
               content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/url'
+                    allOf:
+                      - $ref: '#/components/schemas/url'
+                    required:
+                      - target
             getUrlResponse:
               description: GET /urls/{urlId} response
               content:
@@ -363,17 +366,20 @@ Resources:
               content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/url'
+                    allOf:
+                      - $ref: '#/components/schemas/url'
             deleteUrlResponse:
               description: DELETE /urls/{urlId} response
           schemas:
             documentationHtml:
               type: string
-              format: html
             documentationJson:
               type: object
             paginatedUrlList:
               type: object
+              additionalProperties: false
+              required:
+                - urls
               properties:
                 urls:
                   $ref: '#/components/schemas/urlList'
@@ -385,6 +391,7 @@ Resources:
                 $ref: '#/components/schemas/url'
             url:
               type: object
+              additionalProperties: false
               properties:
                 id:
                   type: string
@@ -399,6 +406,7 @@ Resources:
                 target:
                   type: string
                   description: the target https URL to redirect to
+                  format: uri
                 status:
                   type: string
                   enum:

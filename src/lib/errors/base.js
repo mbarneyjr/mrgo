@@ -3,8 +3,9 @@ class BaseError extends Error {
    * @param {string} message the error message
    * @param {string} code the error code
    * @param {number} statusCode http statuscode associated with error
+   * @param {object} body error body
    */
-  constructor(message, code, statusCode) {
+  constructor(message, code, statusCode, body) {
     super(message);
     Error.captureStackTrace(this, this.constructor);
     /** @type {string} */
@@ -15,6 +16,8 @@ class BaseError extends Error {
     this.code = code;
     /** @type {number} */
     this.statusCode = statusCode;
+    /** @type {object} */
+    this.body = body;
   }
 }
 

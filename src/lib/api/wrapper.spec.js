@@ -4,6 +4,7 @@ chai.use(require('chai-as-promised'));
 const { expect } = chai;
 const sinon = require('sinon');
 const BaseError = require('../errors/base');
+const { getApiGatewayLambdaEvent } = require('../test-utils');
 
 const { apiWrapper } = require('./wrapper');
 
@@ -20,27 +21,37 @@ describe('src/lib/api/wrapper.js', async () => {
 
   describe('apiWrapper', async () => {
     it('should support returning http body directly', async () => {
-      const unwrapped = () => ({ message: 'success' });
+      const unwrapped = sandbox.stub().resolves({ message: 'success' });
       const wrapped = apiWrapper(unwrapped);
-      const result = await wrapped({}, {});
-      expect(result.statusCode).to.equal(200);
+      const event = getApiGatewayLambdaEvent({
+        method: 'GET',
+        path: '/urls',
+      });
+      const result = await wrapped(event, {});
+      expect(result.statusCode).to.equal(200, result.body);
       expect(JSON.parse(result.body)).to.deep.equal({ message: 'success' });
     });
 
     it('should support returning entire http result', async () => {
-      const unwrapped = () => ({ statusCode: 204, body: JSON.stringify({ message: 'success' }) });
+      const unwrapped = sandbox.stub().resolves({ statusCode: 204, body: JSON.stringify({ message: 'success' }) });
       const wrapped = apiWrapper(unwrapped);
-      const result = await wrapped({}, {});
+      const event = getApiGatewayLambdaEvent({
+        method: 'GET',
+        path: '/urls',
+      });
+      const result = await wrapped(event, {});
       expect(result.statusCode).to.equal(204);
       expect(JSON.parse(result.body)).to.deep.equal({ message: 'success' });
     });
 
     it('should handle custom error', async () => {
-      const unwrapped = () => {
-        throw new BaseError('something bad happened', 'BAD_THING', 400);
-      };
+      const unwrapped = sandbox.stub().rejects(new BaseError('something bad happened', 'BAD_THING', 400));
       const wrapped = apiWrapper(unwrapped);
-      const result = await wrapped({}, {});
+      const event = getApiGatewayLambdaEvent({
+        method: 'GET',
+        path: '/urls',
+      });
+      const result = await wrapped(event, {});
       expect(result.statusCode).to.equal(400);
       expect(JSON.parse(result.body)).to.deep.equal({
         message: 'something bad happened',
@@ -48,17 +59,93 @@ describe('src/lib/api/wrapper.js', async () => {
       });
     });
 
-    it('should handle any error', async () => {
-      const unwrapped = () => {
-        throw new Error('unknown error');
-      };
+    it('should throw unknown errors', async () => {
+      const err = new Error('unknown error');
+      const unwrapped = sandbox.stub().rejects(err);
       const wrapped = apiWrapper(unwrapped);
-      const result = await wrapped({}, {});
-      expect(result.statusCode).to.equal(500);
-      expect(JSON.parse(result.body)).to.deep.equal({
-        message: 'unknown internal error',
-        code: 'UNKNOWN_ERROR',
+      const event = getApiGatewayLambdaEvent({
+        method: 'GET',
+        path: '/urls',
       });
+      expect(wrapped(event, {})).to.eventually.be.rejectedWith(err);
+    });
+
+    it('should throw if specifying invalid parameters', async () => {
+      const unwrapped = sandbox.stub();
+      const wrapped = apiWrapper(unwrapped);
+      const event = getApiGatewayLambdaEvent({
+        method: 'GET',
+        path: '/urls',
+        queryStringParameters: {
+          invalid: 'property',
+        },
+      });
+      const result = await wrapped(event, {});
+      expect(result.statusCode).to.equal(400);
+      expect(result.body).to.include('should NOT have additional properties');
+    });
+
+    it('should throw if specifying invalid body', async () => {
+      const unwrapped = sandbox.stub();
+      const wrapped = apiWrapper(unwrapped);
+      const event = getApiGatewayLambdaEvent({
+        method: 'POST',
+        path: '/urls',
+        body: {
+          target: 'not-a-valid-url',
+          extraProperty: 'foo',
+          status: 'INVALID_STATUS',
+        },
+      });
+      const result = await wrapped(event, {});
+      expect(result.statusCode).to.equal(400);
+      expect(result.body).to.include('should match format \\"uri\\"');
+      expect(result.body).to.include('should NOT have additional properties');
+      expect(result.body).to.include('should be equal to one of the allowed values');
+    });
+
+    it('should base64 decode body if specified', async () => {
+      const unwrapped = sandbox.stub().resolves({ message: 'success' });
+      const wrapped = apiWrapper(unwrapped);
+      const event = getApiGatewayLambdaEvent({
+        method: 'POST',
+        path: '/urls',
+        body: Buffer.from(JSON.stringify({
+          target: 'https://unit.test',
+        })).toString('base64'),
+        isBase64Encoded: true,
+      });
+      const result = await wrapped(event, {});
+      expect(result.statusCode).to.equal(200, result.body);
+      sinon.assert.calledOnceWithExactly(unwrapped, { ...event, body: { target: 'https://unit.test' } }, {});
+    });
+
+    it('should parse request body if specified', async () => {
+      const unwrapped = sandbox.stub().resolves({ message: 'success' });
+      const wrapped = apiWrapper(unwrapped);
+      const event = getApiGatewayLambdaEvent({
+        method: 'POST',
+        path: '/urls',
+        body: JSON.stringify({
+          target: 'https://unit.test',
+        }),
+      });
+      const result = await wrapped(event, {});
+      expect(result.statusCode).to.equal(200, result.body);
+      sinon.assert.calledOnceWithExactly(unwrapped, { ...event, body: JSON.parse(event.body) }, {});
+    });
+
+    it('should leave request body untouched if not parsable', async () => {
+      const unwrapped = sandbox.stub().resolves({ message: 'success' });
+      const wrapped = apiWrapper(unwrapped);
+      const event = getApiGatewayLambdaEvent({
+        method: 'GET',
+        path: '/urls',
+        body: 'some,other,data,format',
+      });
+      const result = await wrapped(event, {});
+      expect(result.statusCode).to.equal(200, result.body);
+      sinon.assert.calledOnceWithExactly(unwrapped, event, {});
     });
   });
 });

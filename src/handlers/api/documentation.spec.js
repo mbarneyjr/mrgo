@@ -27,7 +27,7 @@ describe('src/handlers/api/documentation.js', async () => {
     it('should return the openapi spec as json', async () => {
       const res = await documentationHandlers.handler({ queryStringParameters: { format: 'json' } });
       const spec = res;
-      expect(spec.info.title).to.equal('mrgo-test');
+      expect(spec.info.title).to.equal('mrgo-unittest');
     });
   });
 });

@@ -8,6 +8,13 @@
   "license": "ISC",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.101",
+    "@types/axios": "^0.14.0",
+    "@types/chai": "^4.3.4",
+    "@types/chai-as-promised": "^7.1.5",
+    "@types/lodash.get": "^4.4.7",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.11.10",
+    "@types/sinon": "^10.0.13",
     "axios": "^0.27.2",
     "cfn-changeset-viewer": "^0.0.3",
     "cfn-event-tailer": "^0.0.2",
@@ -20,7 +27,8 @@
     "mocha": "^9.2.2",
     "nodemon": "^2.0.20",
     "nyc": "^15.1.0",
-    "sinon": "^13.0.1"
+    "sinon": "^13.0.1",
+    "typescript": "^4.9.3"
   },
   "nyc": {
     "check-coverage": true,

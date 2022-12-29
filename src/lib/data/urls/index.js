@@ -3,20 +3,23 @@ const {
   DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand, UpdateCommand, DeleteCommand,
 } = require('@aws-sdk/lib-dynamodb');
 
-const ShortUniqueId = require('short-unique-id');
+const { default: ShortUniqueId } = require('short-unique-id');
 
 const config = require('../../config');
 const errors = require('../../errors');
 
 exports.uuid = new ShortUniqueId();
 
-/** @type {import('@aws-sdk/lib-dynamodb').DynamoDBDocument} */
+/** @type {import('@aws-sdk/lib-dynamodb').DynamoDBDocumentClient} */
 let documentClient;
 
+/**
+ * @returns {import('@aws-sdk/lib-dynamodb').DynamoDBDocumentClient}
+ */
 /* istanbul ignore next */
 exports.dbc = function dbc() {
   if (documentClient !== undefined) return documentClient;
-  const ddb = new DynamoDBClient();
+  const ddb = new DynamoDBClient({});
   documentClient = DynamoDBDocumentClient.from(ddb, {
     marshallOptions: {
       removeUndefinedValues: true,
@@ -30,26 +33,7 @@ exports.dbc = function dbc() {
   return documentClient;
 };
 
-/**
- * Object representing a URL redirect
- * @typedef {object} Url
- * @property {string} id the ID of the URL (slug that's used to redirect)
- * @property {string} name the user-defined name of the URL
- * @property {string} description the user-defined description of the URL
- * @property {string} target the target https URL to redirect to
- * @property {string} userId the Id of the creating user
- * @property {'ACTIVE'|'INACTIVE'|'DELETED'} status the status of the URL
- * @typedef {object} UrlCreateRequest
- * @property {string} name the user-defined name of the URL
- * @property {string} description the user-defined description of the URL
- * @property {string} target the target https URL to redirect to
- * @property {'ACTIVE'|'INACTIVE'|'DELETED'} status the status of the URL
- */
-
-/**
- * @param {string} userId
- * @returns {Promise<{ urls: Array<Url>, nextToken: string }>}
- */
+/** @type {import('./index').listUrls} */
 exports.listUrls = async (userId, nextToken) => {
   let parsedNextToken;
   try {
@@ -74,28 +58,26 @@ exports.listUrls = async (userId, nextToken) => {
   const newNextToken = response.LastEvaluatedKey
     ? Buffer.from(JSON.stringify(response.LastEvaluatedKey)).toString('base64')
     : undefined;
-  const urls = response.Items?.map((item) => ({
+  const urls = /** @type {import('./index').Url[]} */ (response.Items?.map((item) => ({
     id: item.id,
     name: item.name,
     description: item.description,
     target: item.target,
     status: item.status,
-  }));
+  })));
   return {
     urls,
     nextToken: newNextToken,
   };
 };
 
-/**
- * @param {UrlCreateRequest} item
- * @param {string} string
- * @returns {Promise<Url>}
- */
+/** @type {import('./index').createUrl} */
 exports.createUrl = async (item, userId) => {
   const urlId = exports.uuid();
+  const status = item.status || 'ACTIVE';
   const dynamodbItem = {
     ...item,
+    status,
     id: urlId,
     userId,
   };
@@ -108,15 +90,11 @@ exports.createUrl = async (item, userId) => {
     name: item.name,
     description: item.description,
     target: item.target,
-    status: item.status,
+    status,
   };
 };
 
-/**
- * @param {string} urlId
- * @param {string} userId
- * @returns {Promise<Url>}
- */
+/** @type {import('./index').getUrl} */
 exports.getUrl = async (urlId, userId) => {
   const result = await exports.dbc().send(new GetCommand({
     TableName: config.dynamodb.tableName,
@@ -134,12 +112,7 @@ exports.getUrl = async (urlId, userId) => {
   };
 };
 
-/**
- * @param {UrlCreateRequest} urlUpdateRequest
- * @param {string} urlId
- * @param {string} userId
- * @returns {Promise<Url>}
- */
+/** @type {import('./index').putUrl} */
 exports.putUrl = async (urlUpdateRequest, urlId, userId) => {
   const expressionAttributeNames = {
     '#userId': 'userId',
@@ -211,6 +184,7 @@ exports.putUrl = async (urlUpdateRequest, urlId, userId) => {
   const updatedItem = {};
   try {
     const result = await exports.dbc().send(new UpdateCommand(updateParams));
+    if (result.Attributes === undefined) throw new Error('The dynamodb update request did not return Attributes');
     updatedItem.id = result.Attributes.id;
     updatedItem.name = result.Attributes.name;
     updatedItem.description = result.Attributes.description;
@@ -225,11 +199,7 @@ exports.putUrl = async (urlUpdateRequest, urlId, userId) => {
   return updatedItem;
 };
 
-/**
- * @param {string} urlId
- * @param {string} userId
- * @returns {Promise<void>}
- */
+/** @type {import('./index').deleteUrl} */
 exports.deleteUrl = async (urlId, userId) => {
   try {
     await exports.dbc().send(new DeleteCommand({

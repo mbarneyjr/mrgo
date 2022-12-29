@@ -1,13 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+const { apiWrapper } = require('../../lib/api/wrapper');
 
-/**
- * @param {import('aws-lambda').APIGatewayProxyEventV2} event
- * @param {import('aws-lambda').Context} context
- * @returns {Promise<import('aws-lambda').APIGatewayProxyResultV2>}
- */
 /* eslint-disable-next-line no-unused-vars */
-exports.handler = async (event, context) => {
+exports.handler = apiWrapper(async (event, context) => {
   const queryStringParameters = event.queryStringParameters || {};
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '../../openapi.packaged.json')).toString());
 
@@ -28,4 +24,4 @@ exports.handler = async (event, context) => {
     },
     body: html,
   };
-};
+});

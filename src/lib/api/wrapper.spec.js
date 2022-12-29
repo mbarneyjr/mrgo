@@ -4,7 +4,7 @@ chai.use(require('chai-as-promised'));
 const { expect } = chai;
 const sinon = require('sinon');
 const BaseError = require('../errors/base');
-const { getApiGatewayLambdaEvent } = require('../test-utils');
+const { getApiGatewayLambdaEvent, getApiGatewayLambdaContext } = require('../test-utils');
 
 const { apiWrapper } = require('./wrapper');
 
@@ -27,8 +27,9 @@ describe('src/lib/api/wrapper.js', async () => {
         method: 'GET',
         path: '/urls',
       });
-      const result = await wrapped(event, {});
+      const result = await wrapped(event, getApiGatewayLambdaContext());
       expect(result.statusCode).to.equal(200, result.body);
+      if (!result.body) throw expect.fail('result body was undefined');
       expect(JSON.parse(result.body)).to.deep.equal({ message: 'success' });
     });
 
@@ -39,8 +40,9 @@ describe('src/lib/api/wrapper.js', async () => {
         method: 'GET',
         path: '/urls',
       });
-      const result = await wrapped(event, {});
+      const result = await wrapped(event, getApiGatewayLambdaContext());
       expect(result.statusCode).to.equal(204);
+      if (!result.body) throw expect.fail('result body was undefined');
       expect(JSON.parse(result.body)).to.deep.equal({ message: 'success' });
     });
 
@@ -51,8 +53,9 @@ describe('src/lib/api/wrapper.js', async () => {
         method: 'GET',
         path: '/urls',
       });
-      const result = await wrapped(event, {});
+      const result = await wrapped(event, getApiGatewayLambdaContext());
       expect(result.statusCode).to.equal(400);
+      if (!result.body) throw expect.fail('result body was undefined');
       expect(JSON.parse(result.body)).to.deep.equal({
         message: 'something bad happened',
         code: 'BAD_THING',
@@ -67,7 +70,7 @@ describe('src/lib/api/wrapper.js', async () => {
         method: 'GET',
         path: '/urls',
       });
-      expect(wrapped(event, {})).to.eventually.be.rejectedWith(err);
+      expect(wrapped(event, getApiGatewayLambdaContext())).to.eventually.be.rejectedWith(err);
     });
 
     it('should throw if specifying invalid parameters', async () => {
@@ -80,7 +83,7 @@ describe('src/lib/api/wrapper.js', async () => {
           invalid: 'property',
         },
       });
-      const result = await wrapped(event, {});
+      const result = await wrapped(event, getApiGatewayLambdaContext());
       expect(result.statusCode).to.equal(400);
       expect(result.body).to.include('should NOT have additional properties');
     });
@@ -91,13 +94,13 @@ describe('src/lib/api/wrapper.js', async () => {
       const event = getApiGatewayLambdaEvent({
         method: 'POST',
         path: '/urls',
-        body: {
+        body: JSON.stringify({
           target: 'not-a-valid-url',
           extraProperty: 'foo',
           status: 'INVALID_STATUS',
-        },
+        }),
       });
-      const result = await wrapped(event, {});
+      const result = await wrapped(event, getApiGatewayLambdaContext());
       expect(result.statusCode).to.equal(400);
       expect(result.body).to.include('should match format \\"uri\\"');
       expect(result.body).to.include('should NOT have additional properties');
@@ -115,9 +118,10 @@ describe('src/lib/api/wrapper.js', async () => {
         })).toString('base64'),
         isBase64Encoded: true,
       });
-      const result = await wrapped(event, {});
+      const context = getApiGatewayLambdaContext();
+      const result = await wrapped(event, context);
       expect(result.statusCode).to.equal(200, result.body);
-      sinon.assert.calledOnceWithExactly(unwrapped, { ...event, body: { target: 'https://unit.test' } }, {});
+      sinon.assert.calledOnceWithExactly(unwrapped, { ...event, body: { target: 'https://unit.test' } }, context);
     });
 
     it('should parse request body if specified', async () => {
@@ -130,9 +134,11 @@ describe('src/lib/api/wrapper.js', async () => {
           target: 'https://unit.test',
         }),
       });
-      const result = await wrapped(event, {});
+      if (!event.body) throw expect.fail('event body is undefined');
+      const context = getApiGatewayLambdaContext();
+      const result = await wrapped(event, context);
       expect(result.statusCode).to.equal(200, result.body);
-      sinon.assert.calledOnceWithExactly(unwrapped, { ...event, body: JSON.parse(event.body) }, {});
+      sinon.assert.calledOnceWithExactly(unwrapped, { ...event, body: JSON.parse(event.body) }, context);
     });
 
     it('should leave request body untouched if not parsable', async () => {
@@ -143,9 +149,10 @@ describe('src/lib/api/wrapper.js', async () => {
         path: '/urls',
         body: 'some,other,data,format',
       });
-      const result = await wrapped(event, {});
+      const context = getApiGatewayLambdaContext();
+      const result = await wrapped(event, context);
       expect(result.statusCode).to.equal(200, result.body);
-      sinon.assert.calledOnceWithExactly(unwrapped, event, {});
+      sinon.assert.calledOnceWithExactly(unwrapped, event, context);
     });
   });
 });

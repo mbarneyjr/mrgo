@@ -12,7 +12,6 @@ src/node_modules: src/package-lock.json
 	# touch src/node_modules
 
 src/openapi.packaged.json: templates/api.yml
-	whoami
 	cat ./templates/api.yml | yq .Resources.Api.Properties.DefinitionBody > src/openapi.packaged.json
 
 artifacts/dist.zip: $(shell find ./src -name '*.js') node_modules src/node_modules src/openapi.packaged.json
@@ -39,6 +38,7 @@ dependencies: node_modules src/node_modules
 	pip install -r requirements.txt
 
 lint: node_modules src/node_modules
+	./node_modules/.bin/tsc -p ./jsconfig.json
 	./node_modules/.bin/eslint . --max-warnings=0
 	cfn-lint
 

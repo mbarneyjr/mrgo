@@ -5,8 +5,13 @@ class NotFoundError extends BaseError {
 
   static statusCode = 404;
 
-  constructor(message) {
-    super(message, NotFoundError.errorCode, NotFoundError.statusCode);
+  /**
+   * An error for accessing an entity that does not exist
+   * @param {string} message the not found error message
+   * @param {Record<string, unknown>} [body] the not found error body
+   */
+  constructor(message, body) {
+    super(message, NotFoundError.errorCode, NotFoundError.statusCode, body);
     this.name = this.constructor.name;
     Error.captureStackTrace(this, this.constructor);
   }

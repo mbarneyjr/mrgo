@@ -7,7 +7,7 @@ class ValidationError extends BaseError {
 
   /**
    * @param {string} message error message
-   * @param {Array<object>} validationErrors
+   * @param {Array<object>} [validationErrors]
    */
   constructor(message, validationErrors) {
     super(message, ValidationError.errorCode, ValidationError.statusCode, { validationErrors });

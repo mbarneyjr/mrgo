@@ -27,11 +27,11 @@ exports.getApiGatewayLambdaEvent = (options) => ({
   version: '2.0',
   routeKey: `${options.method} ${options.path}`,
   rawPath: evaluatePathParameters(options.path, options.pathParameters),
-  rawQueryString: options.queryStringParameters && querystring.encode(options.queryStringParameters),
+  rawQueryString: options.queryStringParameters !== undefined ? querystring.encode(options.queryStringParameters) : '',
   queryStringParameters: options.queryStringParameters,
   cookies: options.cookies,
   pathParameters: options.pathParameters,
-  headers: options.headers,
+  headers: options.headers !== undefined ? options.headers : {},
   body: options.body,
   stageVariables: options.stageVariables,
   isBase64Encoded: Boolean(options.isBase64Encoded),
@@ -53,4 +53,43 @@ exports.getApiGatewayLambdaEvent = (options) => ({
     domainName: 'localhost',
     domainPrefix: 'localhost',
   },
+});
+
+/**
+ * @param {Partial<import('aws-lambda').Context>} [options] overrides to the default context
+ * @returns {import('aws-lambda').Context}
+ */
+exports.getApiGatewayLambdaContext = (options) => ({
+  awsRequestId: options?.awsRequestId !== undefined ? options.awsRequestId : 'unittest',
+  callbackWaitsForEmptyEventLoop: options?.callbackWaitsForEmptyEventLoop !== undefined ? options.callbackWaitsForEmptyEventLoop : false,
+  functionName: options?.functionName !== undefined ? options.functionName : '',
+  functionVersion: options?.functionVersion !== undefined ? options.functionVersion : '',
+  getRemainingTimeInMillis: options?.getRemainingTimeInMillis !== undefined ? options.getRemainingTimeInMillis : () => 1000,
+  invokedFunctionArn: options?.invokedFunctionArn !== undefined ? options.invokedFunctionArn : '',
+  logGroupName: options?.logGroupName !== undefined ? options.logGroupName : '',
+  logStreamName: options?.logStreamName !== undefined ? options.logStreamName : '',
+  memoryLimitInMB: options?.memoryLimitInMB !== undefined ? options.memoryLimitInMB : '',
+  clientContext: options?.clientContext !== undefined ? options.clientContext : {
+    env: {
+      platformVersion: 'unittest',
+      platform: 'unittest',
+      make: 'unittest',
+      model: 'unittest',
+      locale: 'unittest',
+    },
+    client: {
+      installationId: 'unittest',
+      appTitle: 'unittest',
+      appVersionName: 'unittest',
+      appVersionCode: 'unittest',
+      appPackageName: 'unittest',
+    },
+  },
+  identity: options?.identity !== undefined ? options.identity : {
+    cognitoIdentityId: 'unittest',
+    cognitoIdentityPoolId: 'unittest',
+  },
+  done: options?.done !== undefined ? options.done : () => false,
+  fail: options?.fail !== undefined ? options.fail : () => false,
+  succeed: options?.succeed !== undefined ? options.succeed : () => false,
 });

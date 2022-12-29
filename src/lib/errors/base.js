@@ -3,7 +3,7 @@ class BaseError extends Error {
    * @param {string} message the error message
    * @param {string} code the error code
    * @param {number} statusCode http statuscode associated with error
-   * @param {object} body error body
+   * @param {object} [body] error body
    */
   constructor(message, code, statusCode, body) {
     super(message);

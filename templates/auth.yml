@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The application being deployed
+  EnvironmentName:
+    Type: String
+    Description: The environment being deployed
+
+
+Resources:
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub ${ApplicationName}-${EnvironmentName}
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireUppercase: true
+          TemporaryPasswordValidityDays: 7
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: false
+          Required: true
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+      SupportedIdentityProviders:
+        - COGNITO
+
+  SsmUserPoolId:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: Cognito User Pool ID
+      Name:
+        Fn::Sub: /${ApplicationName}/${EnvironmentName}/auth/user-pool-id
+      Value:
+        Ref: CognitoUserPool
+
+  SsmUserPoolArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: Cognito User Pool ARN
+      Name:
+        Fn::Sub: /${ApplicationName}/${EnvironmentName}/auth/user-pool-arn
+      Value: !GetAtt CognitoUserPool.Arn
+
+  SSMAppClientId:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: Cognito App Client ID
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/auth/app-client-id
+      Value: !Ref UserPoolClient
+
+
+Outputs:
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref CognitoUserPool
+  UserPoolArn:
+    Description: Cognito User Pool ARN
+    Value: !GetAtt CognitoUserPool.Arn
+  AppClientId:
+    Description: Cognito App Client ID
+    Value: !Ref UserPoolClient

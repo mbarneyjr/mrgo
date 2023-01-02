@@ -25,6 +25,14 @@ Resources:
         ApplicationName: !Ref ApplicationName
         EnvironmentName: !Ref EnvironmentName
 
+  Auth:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/auth.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+
   Cert:
     Type: AWS::CloudFormation::Stack
     Properties:

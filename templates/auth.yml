@@ -8,6 +8,13 @@ Parameters:
   EnvironmentName:
     Type: String
     Description: The environment being deployed
+  DomainName:
+    Type: String
+    Description: The domain name the application will be behind
+
+
+Conditions:
+  IsProd: !Equals [ !Ref EnvironmentName, 'prod' ]
 
 
 Resources:
@@ -38,8 +45,30 @@ Resources:
     Type: AWS::Cognito::UserPoolClient
     Properties:
       UserPoolId: !Ref CognitoUserPool
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthScopes:
+        - phone
+        - email
+        - openid
+        - profile
       SupportedIdentityProviders:
         - COGNITO
+      PreventUserExistenceErrors: ENABLED
+      CallbackURLs:
+        - !Sub https://${DomainName}
+        - !If
+          - IsProd
+          - !Ref AWS::NoValue
+          - http://localhost:3000
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub ${ApplicationName}-${EnvironmentName}
+      UserPoolId: !Ref CognitoUserPool
 
   SsmUserPoolId:
     Type: AWS::SSM::Parameter
@@ -68,6 +97,14 @@ Resources:
       Name: !Sub /${ApplicationName}/${EnvironmentName}/auth/app-client-id
       Value: !Ref UserPoolClient
 
+  SSMHostedUiUrl:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: The Cognito hosted UI URL
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/auth/hosted-ui-url
+      Value: !Sub https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com/login?client_id=${UserPoolClient}&response_type=code&scope=email+openid+phone+profile&code_challenge_method=S256&code_challenge=code_verifier&redirect_uri=http://localhost:3000
+
 
 Outputs:
   UserPoolId:
@@ -79,3 +116,6 @@ Outputs:
   AppClientId:
     Description: Cognito App Client ID
     Value: !Ref UserPoolClient
+  HostedUiUrl:
+    Value: !GetAtt SSMHostedUiUrl.Value
+    Description: The Cognito hosted UI URL

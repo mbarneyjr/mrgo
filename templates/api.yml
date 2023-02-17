@@ -24,6 +24,12 @@ Parameters:
   TableName:
     Type: String
     Description: The name of the dynamodb table
+  AuthUserPoolId:
+    Type: String
+    Description: The ID of the Cognito User Pool to authenticate the API against
+  AuthAppClientId:
+    Type: String
+    Description: The ID of the Cognito User Pool App Client to use to authenticate with
 
 
 Globals:
@@ -229,6 +235,8 @@ Resources:
               operationId: listUrls
               summary: List URLS
               description: List all registered URLs for the authenticated user
+              security:
+                - CognitoAuth: []
               x-amazon-apigateway-integration:
                 connectionType: INTERNET
                 credentials: !GetAtt ApiServiceRole.Arn
@@ -247,6 +255,8 @@ Resources:
               operationId: createUrl
               summary: Create a URL redirect
               description: Create a URL redirect for the authenticated user
+              security:
+                - CognitoAuth: []
               x-amazon-apigateway-integration:
                 connectionType: INTERNET
                 credentials: !GetAtt ApiServiceRole.Arn
@@ -287,6 +297,8 @@ Resources:
               operationId: updateUrl
               summary: Update a URL
               description: Update a specific url for the authenticated user
+              security:
+                - CognitoAuth: []
               x-amazon-apigateway-integration:
                 connectionType: INTERNET
                 credentials: !GetAtt ApiServiceRole.Arn
@@ -313,6 +325,8 @@ Resources:
               operationId: deleteUrl
               summary: Delete a URL
               description: Delete a specific url for the authenticated user
+              security:
+                - CognitoAuth: []
               x-amazon-apigateway-integration:
                 connectionType: INTERNET
                 credentials: !GetAtt ApiServiceRole.Arn
@@ -414,6 +428,20 @@ Resources:
                     - INACTIVE
                     - DELETED
                   description: the status of the URL
+          securitySchemes:
+            CognitoAuth:
+              in: header
+              name: Authorization
+              type: apiKey
+              description: Not actually an api-key. Use Cognito JWT.
+              x-amazon-apigateway-authtype: cognito_user_pools
+              x-amazon-apigateway-authorizer:
+                type: jwt
+                identitySource: $request.header.Authorization
+                jwtConfiguration:
+                  issuer: !Sub https://cognito-idp.us-east-2.amazonaws.com/${AuthUserPoolId}
+                  audience:
+                    - !Ref AuthAppClientId
 
 
 Outputs:

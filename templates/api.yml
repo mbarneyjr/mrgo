@@ -278,8 +278,6 @@ Resources:
               operationId: getUrl
               summary: Get a URL
               description: Get a specific URL for the authenticated user
-              security:
-                - CognitoAuth: []
               x-amazon-apigateway-integration:
                 connectionType: INTERNET
                 credentials: !GetAtt ApiServiceRole.Arn

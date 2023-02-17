@@ -18,6 +18,7 @@ __pycache__
 .coverage
 .nyc_output
 coverage
+.cognito-login.yaml
 
 # Nuxt dev/build outputs
 .output

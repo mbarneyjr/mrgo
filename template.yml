@@ -25,6 +25,15 @@ Resources:
         ApplicationName: !Ref ApplicationName
         EnvironmentName: !Ref EnvironmentName
 
+  Auth:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/auth.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+        DomainName: !Ref DomainName
+
   Cert:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -45,7 +54,8 @@ Resources:
         CertificateArn: !GetAtt Cert.Outputs.CertificateArn
         TableArn: !GetAtt Data.Outputs.TableArn
         TableName: !GetAtt Data.Outputs.TableName
-
+        AuthUserPoolId: !GetAtt Auth.Outputs.UserPoolId
+        AuthAppClientId: !GetAtt Auth.Outputs.AppClientId
 
 Outputs:
   ApiEndpoint:

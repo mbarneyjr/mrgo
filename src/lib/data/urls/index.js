@@ -95,14 +95,14 @@ exports.createUrl = async (item, userId) => {
 };
 
 /** @type {import('./index').getUrl} */
-exports.getUrl = async (urlId, userId) => {
+exports.getUrl = async (urlId) => {
   const result = await exports.dbc().send(new GetCommand({
     TableName: config.dynamodb.tableName,
     Key: {
       id: urlId,
     },
   }));
-  if (result?.Item?.userId !== userId) throw new errors.NotFoundError('url not found', { id: urlId });
+  if (!result?.Item) throw new errors.NotFoundError('url not found', { id: urlId });
   return {
     id: result.Item.id,
     name: result.Item.name,

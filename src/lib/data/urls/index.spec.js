@@ -121,7 +121,7 @@ describe('src/lib/data/urls/index.js', async () => {
           userId: 'test-userId',
         },
       });
-      const result = await urlLib.getUrl('test-urlId', 'test-userId');
+      const result = await urlLib.getUrl('test-urlId');
       expect(result).to.deep.equal({
         id: 'test-id',
         name: 'test-name',
@@ -132,16 +132,9 @@ describe('src/lib/data/urls/index.js', async () => {
     });
     it('should throw a NotFoundError if userId is not the same', async () => {
       sandbox.stub(urlLib.dbc(), 'send').resolves({
-        Item: {
-          id: 'test-id',
-          name: 'test-name',
-          description: 'test-description',
-          target: 'https://mbarney.me',
-          status: 'INACTIVE',
-          userId: 'test-otherUserId',
-        },
+        Item: undefined,
       });
-      await expect(urlLib.getUrl('test-urlId', 'test-userId')).to.be.eventually.rejectedWith(errors.NotFoundError);
+      await expect(urlLib.getUrl('test-urlId')).to.be.eventually.rejectedWith(errors.NotFoundError);
     });
   });
 

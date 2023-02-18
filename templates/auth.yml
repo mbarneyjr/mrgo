@@ -52,15 +52,16 @@ Resources:
         - implicit
       AllowedOAuthScopes:
         - openid
+        - email
       SupportedIdentityProviders:
         - COGNITO
       PreventUserExistenceErrors: ENABLED
       CallbackURLs:
-        - !Sub https://${DomainName}/login
+        - !Sub https://${DomainName}/oauth2/idresponse
         - !If
           - IsProd
           - !Ref AWS::NoValue
-          - http://localhost:3000/login
+          - http://localhost:3000/oauth2/idresponse
 
   UserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
@@ -87,13 +88,21 @@ Resources:
         Fn::Sub: /${ApplicationName}/${EnvironmentName}/auth/user-pool-arn
       Value: !GetAtt CognitoUserPool.Arn
 
-  SSMAppClientId:
+  SsmAppClientId:
     Type: AWS::SSM::Parameter
     Properties:
       Type: String
       Description: Cognito App Client ID
       Name: !Sub /${ApplicationName}/${EnvironmentName}/auth/app-client-id
       Value: !Ref UserPoolClient
+
+  SsmAuthBaseUrl:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: Cognito App Client ID
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/auth/auth-base-url
+      Value: !Sub https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com
 
 
 Outputs:
@@ -106,3 +115,6 @@ Outputs:
   AppClientId:
     Description: Cognito App Client ID
     Value: !Ref UserPoolClient
+  AuthBaseUrl:
+    Description: The base URL of the Cognito user pool
+    Value: !GetAtt SsmAuthBaseUrl.Value

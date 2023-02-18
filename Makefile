@@ -9,7 +9,8 @@ node_modules: package-lock.json
 	touch node_modules
 src/node_modules: src/package-lock.json
 	cd src && npm ci
-	# touch src/node_modules
+frontend/node_modules: frontend/package-lock.json
+	cd frontend && npm ci
 
 src/openapi.packaged.json: templates/api.yml
 	cat ./templates/api.yml | yq .Resources.Api.Properties.DefinitionBody > src/openapi.packaged.json
@@ -21,7 +22,14 @@ artifacts/dist.zip: $(shell find ./src -name '*.js') node_modules src/node_modul
 	cd src && zip -r -D -9 -y --compression-method deflate -X -x @../package-exclusions.txt @ ../artifacts/dist.zip * | grep -v 'node_modules'
 	@echo "zip file MD5: $$(cat artifacts/dist.zip | openssl dgst -md5)"
 
-artifacts/template.packaged.yml: template.yml artifacts/dist.zip
+artifacts/frontend.zip: $(shell find ./frontend -name '*.*js') node_modules src/node_modules src/openapi.packaged.json
+	mkdir -p artifacts
+	rm -rf artifacts/frontend.zip
+	find ./frontend/* -exec touch -h -t 200101010000 {} +
+	cd frontend && zip -r -D -9 -y --compression-method deflate -X -x @../package-exclusions.txt @ ../artifacts/frontend.zip * | grep -v 'node_modules'
+	@echo "zip file MD5: $$(cat artifacts/frontend.zip | openssl dgst -md5)"
+
+artifacts/template.packaged.yml: template.yml artifacts/dist.zip artifacts/frontend.zip
 	mkdir -p artifacts
 	sam package \
 		--template-file template.yml \
@@ -30,19 +38,27 @@ artifacts/template.packaged.yml: template.yml artifacts/dist.zip
 		--output-template-file artifacts/template.packaged.yml
 	touch artifacts/template.packaged.yml
 
+.PHONY: frontend/.env
+frontend/.env:
+	rm -rf frontend/.env
+	touch frontend/.env
+	echo "APP_CLIENT_ID=$$(aws ssm get-parameter --query Parameter.Value --output text --name /${APPLICATION_NAME}/${ENVIRONMENT_NAME}/auth/app-client-id)" >> frontend/.env
+	echo "AUTH_BASE_URL=$$(aws ssm get-parameter --query Parameter.Value --output text --name /${APPLICATION_NAME}/${ENVIRONMENT_NAME}/auth/auth-base-url)" >> frontend/.env
+	echo "API_ENDPOINT=$$(aws ssm get-parameter --query Parameter.Value --output text --name /${APPLICATION_NAME}/${ENVIRONMENT_NAME}/api/api-endpoint)" >> frontend/.env
+	echo "APP_ENDPOINT=http://localhost:3000" >> frontend/.env
 
 ### PHONY dependencies
 .PHONY: dependencies lint build test coverage debug package create-change-set deploy-change-set integration-test delete openapi-server clean
 
-dependencies: node_modules src/node_modules
+dependencies: node_modules src/node_modules frontend/node_modules
 	pip install -r requirements.txt
 
 lint: node_modules src/node_modules
-	./node_modules/.bin/tsc -p ./jsconfig.json
-	./node_modules/.bin/eslint . --max-warnings=0
+	./node_modules/.bin/tsc -p ./tsconfig.json
+	./node_modules/.bin/eslint . --max-warnings=0 --ext .mjs,.js
 	cfn-lint
 
-build: artifacts/dist.zip
+build: artifacts/dist.zip artifacts/frontend.zip
 
 test: src/openapi.packaged.json
 	./node_modules/.bin/env-cmd -f ./.env.test ./node_modules/.bin/mocha './src/{,!(node_modules)/**}/*.spec.js' ${TEST_ARGS}
@@ -119,6 +135,9 @@ integration-test: node_modules
 
 delete:
 	aws cloudformation delete-stack --stack-name ${STACK_NAME}
+
+local-server: frontend/node_modules
+	cd frontend && npm start
 
 openapi-server:
 	live-server openapi &

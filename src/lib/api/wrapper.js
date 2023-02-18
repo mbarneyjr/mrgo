@@ -1,16 +1,16 @@
 const fs = require('fs');
 const path = require('path');
-const errors = require('../errors');
+const apiSchemaBuilder = require('api-schema-builder');
 
-// api-schema-builder has type issues, this will ignore them
-const apiSchemaBuilder = eval('require("api-schema-builder")'); // eslint-disable-line no-eval
+const errors = require('../errors');
 
 /** @type {Record<string, string>} */
 const commonHeaders = {
+  'Access-Control-Allow-Origin': '*',
 };
 
 /**
- * @param {import('aws-lambda').APIGatewayProxyEventV2} event
+ * @param {import('aws-lambda').APIGatewayProxyEventV2WithJWTAuthorizer} event
  * @returns {Promise<import('./wrapper').WrappedEvent>}
  */
 async function parseEvent(event) {

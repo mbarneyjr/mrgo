@@ -179,7 +179,7 @@ Resources:
     Properties:
       ApiId: !Ref Api
       DomainName: !Ref ApiGatewayDomainName
-      Stage: !Ref ApiStage
+      Stage: !Ref ApiApiGatewayDefaultStage
 
   ApiDnsRecord:
     Type: AWS::Route53::RecordSet
@@ -194,13 +194,13 @@ Resources:
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${ApplicationName}-${EnvironmentName}
+      LogGroupName: !Sub /aws/apigateway/${ApplicationName}-${EnvironmentName}-api
       RetentionInDays: 7
 
   Api:
     Type: AWS::Serverless::HttpApi
     Properties:
-      StageName: !Ref EnvironmentName
+      StageName: $default
       AccessLogSettings:
         DestinationArn: !GetAtt ApiLogGroup.Arn
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "errorResponseType":"$context.error.responseType", "message":"$context.error.message", "integrationErrorMessage":"$context.integrationErrorMessage", "authorizerError":"$context.authorizer.error" }'
@@ -443,8 +443,16 @@ Resources:
                   audience:
                     - !Ref AuthAppClientId
 
+  SsmApiEndpoint:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: API Gateway endpoint URL for the API
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/api/api-endpoint
+      Value: !Sub https://api.${DomainName}/
+
 
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL for the API
-    Value: !Sub https://api.${DomainName}/
+    Value: !GetAtt SsmApiEndpoint.Value

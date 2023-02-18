@@ -2,8 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { apiWrapper } = require('../../lib/api/wrapper');
 
-/* eslint-disable-next-line no-unused-vars */
-exports.handler = apiWrapper(async (event, context) => {
+exports.handler = apiWrapper(async (event) => {
   const queryStringParameters = event.queryStringParameters || {};
   const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '../../openapi.packaged.json')).toString());
 

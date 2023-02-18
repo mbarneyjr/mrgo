@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   env: {
     browser: true,
     commonjs: true,
@@ -10,30 +11,38 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 'latest',
+    project: './jsconfig.json',
   },
   rules: {
-    'max-len': ['error', 240],
+    'max-len': ['error', 512],
+    'yoda': 'off',
+    'prefer-destructuring': 'off',
     'comma-dangle': ['error', 'always-multiline'],
     'semi': ['error', 'always'],
     'indent': ['error', 2],
-    'quotes': ['error', 'single'],
+    'quotes': ['error', 'single', {
+      avoidEscape: true,
+      allowTemplateLiterals: true,
+    }],
     'quote-props': ['error', 'consistent-as-needed'],
     'arrow-body-style': 'off',
+    'no-restricted-syntax': 'off',
     'import/extensions': 'off',
     'import/prefer-default-export': 'off',
     'import/no-cycle': 'off',
     'import/no-extraneous-dependencies': ['error', {
       devDependencies: true,
-      packageDir: [__dirname, `${__dirname}/src`],
+      packageDir: [__dirname, `${__dirname}/src`, `${__dirname}/frontend`],
     }],
   },
   overrides: [{
     files: [
-      '*.spec.js',
-      '*.test.js',
+      'frontend/*.*js',
     ],
     rules: {
-      'import/no-extraneous-dependencies': 'off',
+      'no-alert': 'off',
+      'no-restricted-globals': 'off',
+      'implicit-arrow-linebreak': 'off',
     },
   }],
 };

@@ -4,22 +4,23 @@ const urlsLib = require('../../lib/data/urls');
 exports.listHandler = apiWrapper(async (event) => {
   const claims = event.requestContext.authorizer.jwt.claims;
   const userId = claims.email;
-  if (typeof userId !== 'string') throw new Error(`Invalid email claim, it should be a string but is not, claims: ${JSON.stringify(claims)}`);
-  const urls = await urlsLib.listUrls(userId, event.queryStringParameters?.nextToken);
+  const limit = event.queryStringParameters?.limit ? parseInt(event.queryStringParameters?.limit, 10) : 10;
+  const paginationToken = event.queryStringParameters?.paginationToken;
+  const urls = await urlsLib.listUrls(/** @type {string} */ (userId), limit, paginationToken);
   return {
     urls: urls.urls,
-    nextToken: urls.nextToken,
+    forwardPaginationToken: urls.forwardPaginationToken,
+    backwardPaginationToken: urls.backwardPaginationToken,
   };
-});
+}, { authorizeJwt: true });
 
 exports.createHandler = apiWrapper(async (event) => {
   const claims = event.requestContext.authorizer.jwt.claims;
   const userId = claims.email;
-  if (typeof userId !== 'string') throw new Error(`Invalid email claim, it should be a string but is not, claims: ${JSON.stringify(claims)}`);
   const urlCreateRequest = /** @type {import('../../lib/data/urls/index').UrlCreateRequest} */ (event.body);
-  const url = await urlsLib.createUrl(urlCreateRequest, userId);
+  const url = await urlsLib.createUrl(urlCreateRequest, /** @type {string} */ (userId));
   return url;
-});
+}, { authorizeJwt: true });
 
 exports.getHandler = apiWrapper(async (event) => {
   const url = await urlsLib.getUrl(/** @type {string} */ (event.pathParameters?.urlId));
@@ -29,15 +30,13 @@ exports.getHandler = apiWrapper(async (event) => {
 exports.putHandler = apiWrapper(async (event) => {
   const claims = event.requestContext.authorizer.jwt.claims;
   const userId = claims.email;
-  if (typeof userId !== 'string') throw new Error(`Invalid email claim, it should be a string but is not, claims: ${JSON.stringify(claims)}`);
   const urlUpdateRequest = /** @type {import('../../lib/data/urls/index').UrlUpdateRequest} */ (event.body);
-  const url = await urlsLib.putUrl(urlUpdateRequest, /** @type {string} */ (event.pathParameters?.urlId), userId);
+  const url = await urlsLib.putUrl(urlUpdateRequest, /** @type {string} */ (event.pathParameters?.urlId), /** @type {string} */ (userId));
   return url;
-});
+}, { authorizeJwt: true });
 
 exports.deleteHandler = apiWrapper(async (event) => {
   const claims = event.requestContext.authorizer.jwt.claims;
   const userId = claims.email;
-  if (typeof userId !== 'string') throw new Error(`Invalid email claim, it should be a string but is not, claims: ${JSON.stringify(claims)}`);
-  await urlsLib.deleteUrl(/** @type {string} */ (event.pathParameters?.urlId), userId);
-});
+  await urlsLib.deleteUrl(/** @type {string} */ (event.pathParameters?.urlId), /** @type {string} */ (userId));
+}, { authorizeJwt: true });

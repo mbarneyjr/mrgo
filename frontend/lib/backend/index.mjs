@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 
 import { config } from '../config/index.mjs';
+import { logger } from '../logger/index.mjs';
 
 /**
  * @param {string} urlId
@@ -10,48 +11,54 @@ export async function getUrl(urlId) {
   const response = await fetch(`${config.apiEndpoint}/urls/${urlId}`);
   const body = /** @type {import('../../../src/lib/data/urls/index.js').Url} */ (await response.json());
   if (response.status < 200 || 299 < response.status) {
-    /* eslint-disable-next-line no-console */
-    console.error(`failed to get url: ${JSON.stringify(body)}`);
+    const errorLog = logger.error('failed to get url', { error: body });
     if (response.status === 404) return null;
-    throw new Error(`failed to get url, ${body}`);
+    throw new Error(JSON.stringify(errorLog));
   }
   return body;
 }
 
 /**
- * @param {string | undefined} nextToken
+ * @param {string | undefined} paginationToken
  * @param {import('../../lib/middleware/auth/index.js').LoggedInSession} session
- * @returns {Promise<{ error: import('./index.js').ErrorMessage, urls: Array<import('../../../src/lib/data/urls/index.js').Url>}>}
+ * @returns {Promise<import('./index.js').DataOrError<import('../../../src/lib/data/urls/index.js').UrlListResponse>>}
  */
-export async function getUrls(nextToken, session) {
+export async function getUrls(paginationToken, session) {
+  logger.debug('getting urls', { paginationToken });
   /** @type {Record<string, string>} */
-  const queryStringParameters = {};
-  if (nextToken) queryStringParameters.nextToken = nextToken;
+  const queryStringParameters = {
+    limit: config.api.pageSize.toString(),
+  };
+  if (paginationToken) queryStringParameters.paginationToken = paginationToken;
 
   const response = await fetch(`${config.apiEndpoint}/urls?${new URLSearchParams(queryStringParameters)}`, {
     headers: {
       Authorization: session.idToken,
     },
   });
-  const body = /** @type {import('../../../src/lib/data/urls/index.js').UrlListResponse} */ (await response.json());
-  if (response.status < 200 || 299 < response.status) {
-    /* eslint-disable-next-line no-console */
-    console.error(`failed to list urls: ${JSON.stringify(body)}`);
-    // if user error // todo standardize on 4xx error response
-    if (399 < response.status && response.status < 500) return { error: JSON.stringify(body), urls: [] };
-    throw new Error(`failed to list urls, ${JSON.stringify(body)}`);
-  }
 
+  if (response.status < 200 || 299 < response.status) {
+    const errorResponse = /** @type {import('./index.js').ApiErrorResponseBody} */ (await response.json());
+    const errorLog = logger.error('failed to list urls', { error: errorResponse });
+    if (399 < response.status && response.status < 500) return { error: errorResponse.error.message };
+    throw new Error(JSON.stringify(errorLog));
+  }
+  const body = /** @type {import('../../../src/lib/data/urls/index.js').UrlListResponse} */ (await response.json());
+
+  logger.debug('response', { urls: body.urls.length, forward: body.forwardPaginationToken, backward: body.backwardPaginationToken });
   return {
-    urls: body.urls,
-    error: null,
+    result: {
+      urls: body.urls,
+      forwardPaginationToken: body.forwardPaginationToken,
+      backwardPaginationToken: body.backwardPaginationToken,
+    },
   };
 }
 
 /**
  * @param {import('../../../src/lib/data/urls/index.js').UrlCreateRequest} urlCreateRequest
  * @param {import('../../lib/middleware/auth/index.js').LoggedInSession} session
- * @returns {Promise<{ error: import('./index.js').ErrorMessage, url: import('../../../src/lib/data/urls/index.js').UrlCreateResponse | null }>}
+ * @returns {Promise<import('./index.js').DataOrError<import('../../../src/lib/data/urls/index.js').UrlCreateResponse>>}
  */
 export async function createUrl(urlCreateRequest, session) {
   const response = await fetch(`${config.apiEndpoint}/urls`, {
@@ -64,17 +71,15 @@ export async function createUrl(urlCreateRequest, session) {
       Authorization: session.idToken,
     },
   });
-  const body = /** @type {import('../../../src/lib/data/urls/index.js').UrlCreateResponse} */ (await response.json());
   if (response.status < 200 || 299 < response.status) {
-    /* eslint-disable-next-line no-console */
-    console.error(`failed to create url: ${JSON.stringify(body)}`);
-    // if user error // todo standardize on 4xx error response
-    if (399 < response.status && response.status < 500) return { url: null, error: JSON.stringify(body) };
-    throw new Error(`failed to create url, ${JSON.stringify(body)}`);
+    const errorResponse = /** @type {import('./index.js').ApiErrorResponseBody} */ (await response.json());
+    const errorLog = logger.error('failed to create url', { error: errorResponse });
+    if (399 < response.status && response.status < 500) return { error: errorResponse.error.message };
+    throw new Error(JSON.stringify(errorLog));
   }
+  const body = /** @type {import('../../../src/lib/data/urls/index.js').UrlCreateResponse} */ (await response.json());
   return {
-    url: body,
-    error: null,
+    result: body,
   };
 }
 

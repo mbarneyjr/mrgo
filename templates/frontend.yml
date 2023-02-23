@@ -67,6 +67,10 @@ Resources:
       FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-frontend-proxy
       Handler: index.handler
       Role: !GetAtt LambdaRole.Arn
+  FrontendProxyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FrontendProxy}
 
   ApiServiceRole:
     Type: AWS::IAM::Role
@@ -119,7 +123,6 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/apigateway/${ApplicationName}-${EnvironmentName}-frontend
-      RetentionInDays: 7
 
   Api:
     Type: AWS::Serverless::HttpApi

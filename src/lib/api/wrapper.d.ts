@@ -1,5 +1,22 @@
 import { Context, APIGatewayProxyResultV2, APIGatewayProxyStructuredResultV2, APIGatewayProxyEventV2WithJWTAuthorizer } from 'aws-lambda'
 
+export interface ApiWrapperOptions {
+  authorizeJwt?: boolean
+}
+
+export interface ValidationError extends Record<string, string> {
+  message: string
+  dataPath: string
+}
+
+export interface ApiErrorResponseBody {
+  error: {
+    message: string
+    code: string
+    body?: Record<string, unknown>
+  }
+}
+
 export interface WrappedEvent extends Omit<APIGatewayProxyEventV2WithJWTAuthorizer, 'body'> {
   body?: string | number | boolean | object
 }
@@ -10,4 +27,4 @@ export type UnwrappedHandler = (event: WrappedEvent, context: Context) => Promis
 export type LambdaHandler = (event: APIGatewayProxyEventV2WithJWTAuthorizer, context: Context) => Promise<APIGatewayProxyStructuredResultV2>
 
 export function validateEvent(event: WrappedEvent): void
-export function apiWrapper(handlerFunction: UnwrappedHandler): LambdaHandler
+export function apiWrapper(handlerFunction: UnwrappedHandler, options?: ApiWrapperOptions): LambdaHandler

@@ -30,12 +30,18 @@ describe('src/lib/data/urls/index.js', async () => {
           description: 'test-description',
           target: 'https://mbarney.me',
           status: 'INACTIVE',
+        }, {
+          id: 'future-id',
+          name: 'future-name',
+          description: 'future-description',
+          target: 'https://mbarney.me',
+          status: 'INACTIVE',
         }],
         LastEvaluatedKey: {
           id: 'test-id',
         },
       });
-      const result = await urlLib.listUrls('test-userId');
+      const result = await urlLib.listUrls('test-userId', 10);
       expect(result).to.deep.equal({
         urls: [{
           id: 'test-id',
@@ -44,11 +50,63 @@ describe('src/lib/data/urls/index.js', async () => {
           target: 'https://mbarney.me',
           status: 'INACTIVE',
         }],
-        nextToken: Buffer.from(JSON.stringify({ id: 'test-id' })).toString('base64'),
+        backwardPaginationToken: undefined,
+        forwardPaginationToken: Buffer.from(JSON.stringify({ direction: 'forward', exclusiveStartKey: { id: 'test-id' } })).toString('base64'),
       });
     });
 
-    it('should throw when invalid nextToken specified', async () => {
+    it('should handle backwards pagination, keeping order', async () => {
+      sandbox.stub(urlLib.dbc(), 'send').resolves({
+        Items: [{
+          id: 'test-id',
+          name: 'test-name',
+          description: 'test-description',
+          target: 'https://mbarney.me',
+          status: 'INACTIVE',
+        }, {
+          id: 'intermediate-id',
+          name: 'intermediate-name',
+          description: 'intermediate-description',
+          target: 'https://mbarney.me',
+          status: 'INACTIVE',
+        }, {
+          id: 'future-id',
+          name: 'future-name',
+          description: 'future-description',
+          target: 'https://mbarney.me',
+          status: 'INACTIVE',
+        }],
+        LastEvaluatedKey: {
+          id: 'test-id',
+        },
+      });
+
+      const backwardPaginationToken = Buffer.from(JSON.stringify({
+        direction: 'backward',
+        exclusiveStartKey: { id: 'past-id' },
+      })).toString('base64');
+      const result = await urlLib.listUrls('test-userId', 10, backwardPaginationToken);
+
+      expect(result).to.deep.equal({
+        urls: [{
+          id: 'intermediate-id',
+          name: 'intermediate-name',
+          description: 'intermediate-description',
+          target: 'https://mbarney.me',
+          status: 'INACTIVE',
+        }, {
+          id: 'test-id',
+          name: 'test-name',
+          description: 'test-description',
+          target: 'https://mbarney.me',
+          status: 'INACTIVE',
+        }],
+        backwardPaginationToken: Buffer.from(JSON.stringify({ direction: 'backward', exclusiveStartKey: { id: 'intermediate-id' } })).toString('base64'),
+        forwardPaginationToken: Buffer.from(JSON.stringify({ direction: 'forward', exclusiveStartKey: { id: 'test-id' } })).toString('base64'),
+      });
+    });
+
+    it('should throw when invalid paginationToken specified', async () => {
       sandbox.stub(urlLib.dbc(), 'send').resolves({
         Items: [{
           id: 'test-id',
@@ -61,10 +119,20 @@ describe('src/lib/data/urls/index.js', async () => {
           id: 'test-id',
         },
       });
-      await expect(urlLib.listUrls('test-userId', 'invalid-nextToken')).to.eventually.be.rejectedWith(errors.ValidationError);
+      await expect(urlLib.listUrls('test-userId', 10, 'invalid-paginationToken')).to.eventually.be.rejectedWith(errors.ValidationError);
     });
 
-    it('should not return nextToken when one not returned from dynamo', async () => {
+    it('should return empty array when dynamo returns undefined response.Items', async () => {
+      sandbox.stub(urlLib.dbc(), 'send').resolves({
+        Items: undefined,
+      });
+      const response = await urlLib.listUrls('test-userId', 10);
+      expect(response).to.deep.equal({
+        urls: [],
+      });
+    });
+
+    it('should not return paginationToken when one not returned from dynamo', async () => {
       sandbox.stub(urlLib.dbc(), 'send').resolves({
         Items: [{
           id: 'test-id',
@@ -74,7 +142,7 @@ describe('src/lib/data/urls/index.js', async () => {
           status: 'INACTIVE',
         }],
       });
-      const result = await urlLib.listUrls('test-userId');
+      const result = await urlLib.listUrls('test-userId', 10);
       expect(result).to.deep.equal({
         urls: [{
           id: 'test-id',
@@ -83,7 +151,8 @@ describe('src/lib/data/urls/index.js', async () => {
           target: 'https://mbarney.me',
           status: 'INACTIVE',
         }],
-        nextToken: undefined,
+        forwardPaginationToken: undefined,
+        backwardPaginationToken: undefined,
       });
     });
   });
@@ -106,6 +175,55 @@ describe('src/lib/data/urls/index.js', async () => {
         target: 'https://mbarney.me',
         status: 'ACTIVE',
       });
+    });
+
+    it('should handle a hostname for target', async () => {
+      sandbox.stub(urlLib.dbc(), 'send').resolves();
+      sandbox.stub(urlLib, 'uuid').returns('test-id');
+
+      const result = await urlLib.createUrl({
+        name: 'test-name',
+        description: 'test-description',
+        target: 'mbarney.me',
+        status: 'ACTIVE',
+      }, 'unittest');
+      expect(result).to.deep.equal({
+        id: 'test-id',
+        name: 'test-name',
+        description: 'test-description',
+        target: 'https://mbarney.me',
+        status: 'ACTIVE',
+      });
+    });
+
+    it('should use ACTIVE as default status', async () => {
+      sandbox.stub(urlLib.dbc(), 'send').resolves();
+      sandbox.stub(urlLib, 'uuid').returns('test-id');
+
+      const result = await urlLib.createUrl({
+        name: 'test-name',
+        description: 'test-description',
+        target: 'https://mbarney.me',
+      }, 'unittest');
+      expect(result).to.deep.equal({
+        id: 'test-id',
+        name: 'test-name',
+        description: 'test-description',
+        target: 'https://mbarney.me',
+        status: 'ACTIVE',
+      });
+    });
+
+    it('should throw if target is invalid', async () => {
+      sandbox.stub(urlLib.dbc(), 'send').resolves();
+      sandbox.stub(urlLib, 'uuid').returns('test-id');
+
+      await expect(urlLib.createUrl({
+        name: 'test-name',
+        description: 'test-description',
+        target: '',
+        status: 'ACTIVE',
+      }, 'unittest')).to.eventually.be.rejectedWith(errors.ValidationError);
     });
   });
 
@@ -165,25 +283,6 @@ describe('src/lib/data/urls/index.js', async () => {
       });
     });
 
-    it('should update a url with null items', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
-        Attributes: {
-          id: 'test-id',
-          name: 'test-name',
-          description: 'test-description',
-          target: 'https://mbarney.me',
-          status: 'INACTIVE',
-          userId: 'test-userId',
-        },
-      });
-      await urlLib.putUrl({
-        name: null,
-        description: null,
-        target: null,
-        status: null,
-      }, 'test-id', 'test-userId');
-    });
-
     it('should update a url with empty object', async () => {
       sandbox.stub(urlLib.dbc(), 'send').resolves({
         Attributes: {
@@ -232,6 +331,18 @@ describe('src/lib/data/urls/index.js', async () => {
         target: null,
         status: null,
       }, 'test-id', 'test-userId')).to.eventually.be.rejectedWith(errors.NotFoundError);
+    });
+
+    it('should throw if dynamodb returns undefined response.Attributes', async () => {
+      sandbox.stub(urlLib.dbc(), 'send').resolves({
+        Attributes: undefined,
+      });
+      await expect(urlLib.putUrl({
+        name: null,
+        description: null,
+        target: null,
+        status: null,
+      }, 'test-id', 'test-userId')).to.eventually.be.rejectedWith(errors.InternalServerError);
     });
 
     it('should throw error when other error thrown', async () => {

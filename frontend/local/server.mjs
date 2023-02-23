@@ -2,6 +2,7 @@ import express from 'express';
 import cookie from 'cookie';
 
 import { handler } from '../index.mjs';
+import { logger } from '../lib/logger/index.mjs';
 
 const app = express();
 
@@ -92,5 +93,5 @@ app.all('/*', async (req, res) => {
 
 app.listen(port, () => {
   /* eslint-disable-next-line no-console */
-  console.log(`Listening on http://localhost:${port}`);
+  logger.info(`Listening on http://localhost:${port}`);
 });

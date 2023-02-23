@@ -33,18 +33,31 @@ exports.dbc = function dbc() {
   return documentClient;
 };
 
+function makeKey(record) {
+  return {
+    id: record?.id,
+    userId: record?.userId,
+  };
+}
+
 /** @type {import('./index').listUrls} */
-exports.listUrls = async (userId, nextToken) => {
-  let parsedNextToken;
+exports.listUrls = async (userId, limit, paginationToken) => {
+  let parsedPaginationToken;
   try {
-    if (nextToken) parsedNextToken = JSON.parse(Buffer.from(nextToken, 'base64').toString());
+    if (paginationToken) parsedPaginationToken = JSON.parse(Buffer.from(paginationToken, 'base64').toString());
   } catch (err) {
-    throw new errors.ValidationError('invalid nextToken');
+    throw new errors.ValidationError('invalid paginationToken');
   }
+
+  const requestedDirection = parsedPaginationToken?.direction ?? 'forward';
+  const exclusiveStartKey = parsedPaginationToken?.exclusiveStartKey;
+
   /** @type {import('@aws-sdk/lib-dynamodb').QueryCommandInput} */
   const queryParams = {
     TableName: config.dynamodb.tableName,
     IndexName: config.dynamodb.indexes.byUserId,
+    // always query for one more than the limit so we know if there's another page
+    Limit: limit + 1,
     KeyConditionExpression: '#userId = :userId',
     ExpressionAttributeNames: {
       '#userId': 'userId',
@@ -52,12 +65,39 @@ exports.listUrls = async (userId, nextToken) => {
     ExpressionAttributeValues: {
       ':userId': userId,
     },
-    ExclusiveStartKey: parsedNextToken,
+    ExclusiveStartKey: exclusiveStartKey,
+    ScanIndexForward: requestedDirection === 'forward',
   };
+
   const response = await exports.dbc().send(new QueryCommand(queryParams));
-  const newNextToken = response.LastEvaluatedKey
-    ? Buffer.from(JSON.stringify(response.LastEvaluatedKey)).toString('base64')
-    : undefined;
+  if (!response.Items) return { urls: [] };
+  // if response.LastEvaluatedKey is present, we have more pagination to do
+  const hasMoreResults = response.LastEvaluatedKey !== undefined;
+  if (hasMoreResults) response.Items?.pop();
+  // keep page ordering for backward pagination
+  if (requestedDirection === 'backward') {
+    response.Items?.reverse();
+  }
+
+  let forwardPaginationToken;
+  if ((requestedDirection === 'backward' || hasMoreResults)) {
+    const forwardPaginationObject = {
+      direction: 'forward',
+      exclusiveStartKey: makeKey(response.Items[response.Items.length - 1]),
+    };
+    forwardPaginationToken = Buffer.from(JSON.stringify(forwardPaginationObject)).toString('base64');
+  }
+
+  let backwardPaginationToken;
+  const requestedFirstPage = paginationToken === undefined;
+  if (!requestedFirstPage && (requestedDirection === 'forward' || hasMoreResults)) {
+    const backwardPaginationObject = {
+      direction: 'backward',
+      exclusiveStartKey: makeKey(response.Items[0]),
+    };
+    backwardPaginationToken = Buffer.from(JSON.stringify(backwardPaginationObject)).toString('base64');
+  }
+
   const urls = /** @type {import('./index').Url[]} */ (response.Items?.map((item) => ({
     id: item.id,
     name: item.name,
@@ -65,14 +105,18 @@ exports.listUrls = async (userId, nextToken) => {
     target: item.target,
     status: item.status,
   })));
+
   return {
     urls,
-    nextToken: newNextToken,
+    forwardPaginationToken,
+    backwardPaginationToken,
   };
 };
 
 /** @type {import('./index').createUrl} */
 exports.createUrl = async (item, userId) => {
+  if (!item.target) throw new errors.ValidationError('missing url target');
+  const targetWithProtocol = item.target.includes('://') ? item.target : `https://${item.target}`;
   const urlId = exports.uuid();
   const status = item.status || 'ACTIVE';
   const dynamodbItem = {
@@ -80,6 +124,7 @@ exports.createUrl = async (item, userId) => {
     status,
     id: urlId,
     userId,
+    target: targetWithProtocol,
   };
   await exports.dbc().send(new PutCommand({
     TableName: config.dynamodb.tableName,
@@ -87,9 +132,9 @@ exports.createUrl = async (item, userId) => {
   }));
   return {
     id: urlId,
-    name: item.name,
-    description: item.description,
-    target: item.target,
+    name: dynamodbItem.name,
+    description: dynamodbItem.description,
+    target: dynamodbItem.target,
     status,
   };
 };
@@ -184,7 +229,7 @@ exports.putUrl = async (urlUpdateRequest, urlId, userId) => {
   const updatedItem = {};
   try {
     const result = await exports.dbc().send(new UpdateCommand(updateParams));
-    if (result.Attributes === undefined) throw new Error('The dynamodb update request did not return Attributes');
+    if (result.Attributes === undefined) throw new errors.InternalServerError('The dynamodb update request did not return Attributes', { result });
     updatedItem.id = result.Attributes.id;
     updatedItem.name = result.Attributes.name;
     updatedItem.description = result.Attributes.description;

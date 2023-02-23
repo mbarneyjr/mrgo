@@ -195,7 +195,6 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/apigateway/${ApplicationName}-${EnvironmentName}-api
-      RetentionInDays: 7
 
   Api:
     Type: AWS::Serverless::HttpApi
@@ -246,9 +245,13 @@ Resources:
                 uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListUrls.Arn}/invocations
               parameters:
                 - in: query
-                  name: nextToken
-                  description: A token used to query the next page of results
+                  name: paginationToken
+                  description: A token used to query for the next page of results
                   schema: { type: string }
+                - in: query
+                  name: limit
+                  description: Limit the number of urls returned
+                  schema: { type: number }
               responses:
                 '200': { $ref: '#/components/responses/listUrlsResponse' }
             post:
@@ -394,10 +397,13 @@ Resources:
               additionalProperties: false
               required:
                 - urls
+                - directions
               properties:
                 urls:
                   $ref: '#/components/schemas/urlList'
-                nextToken:
+                forwardPaginationToken:
+                  type: string
+                backwardPaginationToken:
                   type: string
             urlList:
               type: array
@@ -420,7 +426,6 @@ Resources:
                 target:
                   type: string
                   description: the target https URL to redirect to
-                  format: uri
                 status:
                   type: string
                   enum:

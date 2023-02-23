@@ -9,15 +9,27 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('../../lib/router/index.js').RenderFunction} */
 const getUrlsHandler = authMiddleware(async (event, session) => {
-  const response = await getUrls(event.queryStringParameters?.nextToken, session);
+  const response = await getUrls(event.queryStringParameters?.paginationToken, session);
+
+  /** @type {string[]} */
+  const errorMessages = [];
+  if (event.queryStringParameters?.error) errorMessages.push(event.queryStringParameters.error);
+  if ('error' in response) errorMessages.push(response.error);
+
+  const urls = 'result' in response ? response.result.urls : [];
+  const forwardPaginationToken = 'result' in response ? response.result.forwardPaginationToken : undefined;
+  const backwardPaginationToken = 'result' in response ? response.result.backwardPaginationToken : undefined;
+
   return {
     body: readFileSync(`${dirname}/index.html`).toString(),
     headers: {
       'content-type': 'text/html',
     },
     state: {
-      error: event.queryStringParameters?.error || response.error,
-      urls: response.urls,
+      error: errorMessages.join(','),
+      urls,
+      forwardPaginationToken,
+      backwardPaginationToken,
     },
     session,
   };
@@ -43,7 +55,7 @@ const postUrlsHandler = authMiddleware(async (event, session) => {
 
   if (postUrlsRequest.method === 'create') {
     const response = await createUrl(postUrlsRequest, session);
-    if (response.error) {
+    if ('error' in response) {
       return {
         statusCode: 302,
         headers: {

@@ -9,6 +9,7 @@ import logoutHandler from '../../pages/logout/index.mjs';
 import notFoundPage from '../../pages/404/index.mjs';
 import internalServerErrorPage from '../../pages/500/index.mjs';
 import homePageHandler from '../../pages/index.mjs';
+import { errorJson, logger } from '../logger/index.mjs';
 
 const router = new Router();
 
@@ -64,8 +65,7 @@ export default async function routerHandler(event, session) {
     if (renderResult.statusCode !== 404) return renderResult;
     return notFoundPage(event, session);
   } catch (err) {
-    /* eslint-disable-next-line no-console */
-    console.error(err);
+    logger.error('error rendering page', { error: errorJson(err) });
     return internalServerErrorPage(event, session);
   }
 }

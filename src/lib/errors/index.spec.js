@@ -5,7 +5,7 @@ const { expect } = chai;
 const sinon = require('sinon');
 const errors = require('./index');
 
-describe('src/lib/api/wrapper.js', async () => {
+describe('src/lib/errors/index.js', async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
@@ -22,6 +22,24 @@ describe('src/lib/api/wrapper.js', async () => {
       expect(error.message).to.equal('mymessage');
       expect(error.code).to.equal('TEST_CODE');
       expect(error.statusCode).to.equal(123);
+    });
+  });
+
+  describe('internal-server', async () => {
+    it('correctly constructs a internal-server error', async () => {
+      const error = new errors.InternalServerError('my invalid message');
+      expect(error.message).to.equal('my invalid message');
+      expect(error.code).to.equal(errors.InternalServerError.errorCode);
+      expect(error.statusCode).to.equal(errors.InternalServerError.statusCode);
+    });
+
+    it('correctly sets error cause if given', async () => {
+      const causingError = new Error('some bad error');
+      const error = new errors.InternalServerError('my invalid message', causingError);
+      expect(error.message).to.equal('my invalid message');
+      expect(error.code).to.equal(errors.InternalServerError.errorCode);
+      expect(error.statusCode).to.equal(errors.InternalServerError.statusCode);
+      expect(error.cause).to.deep.equal(causingError);
     });
   });
 

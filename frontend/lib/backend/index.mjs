@@ -5,17 +5,19 @@ import { logger } from '../logger/index.mjs';
 
 /**
  * @param {string} urlId
- * @returns {Promise<import('../../../src/lib/data/urls/index.js').Url | null>}
+ * @returns {Promise<import('./index.js').DataOrError<import('../../../src/lib/data/urls/index.js').Url>>}
  */
 export async function getUrl(urlId) {
   const response = await fetch(`${config.apiEndpoint}/urls/${urlId}`);
   const body = /** @type {import('../../../src/lib/data/urls/index.js').Url} */ (await response.json());
   if (response.status < 200 || 299 < response.status) {
     const errorLog = logger.error('failed to get url', { error: body });
-    if (response.status === 404) return null;
+    if (response.status === 404) return { error: 'URL not found' };
     throw new Error(JSON.stringify(errorLog));
   }
-  return body;
+  return {
+    result: body,
+  };
 }
 
 /**
@@ -52,6 +54,30 @@ export async function getUrls(paginationToken, session) {
       forwardPaginationToken: body.forwardPaginationToken,
       backwardPaginationToken: body.backwardPaginationToken,
     },
+  };
+}
+
+/**
+ * @param {string} urlId
+ * @param {import('../../../src/lib/data/urls/index.js').UrlUpdateRequest} updateRequest
+ * @param {import('../../lib/middleware/auth/index.js').LoggedInSession} session
+ * @returns {Promise<import('./index.js').DataOrError<import('../../../src/lib/data/urls/index.js').Url>>}
+ */
+export async function updateUrl(urlId, updateRequest, session) {
+  const response = await fetch(`${config.apiEndpoint}/urls/${urlId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updateRequest),
+    headers: {
+      Authorization: session.idToken,
+    },
+  });
+  const body = /** @type {import('../../../src/lib/data/urls/index.js').Url} */ (await response.json());
+  if (response.status < 200 || 299 < response.status) {
+    const errorLog = logger.error('failed to update url', { error: body });
+    throw new Error(JSON.stringify(errorLog));
+  }
+  return {
+    result: body,
   };
 }
 

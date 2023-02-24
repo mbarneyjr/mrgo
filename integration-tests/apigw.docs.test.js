@@ -6,7 +6,7 @@ const { expect } = chai;
 
 describe('Calling API Gateway /docs endpoint', async () => {
   const apigwBaseUrl = process.env.API_ENDPOINT;
-  const apigwEndpoint = `${apigwBaseUrl}docs`;
+  const apigwEndpoint = `${apigwBaseUrl}/docs`;
 
   it('should successfully return a text/html http response', async () => {
     const response = await axios.get(`${apigwEndpoint}`, {});

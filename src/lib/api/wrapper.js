@@ -81,9 +81,9 @@ exports.apiWrapper = (handlerFunction, options) => {
     logger.info('event', { event });
     try {
       const parsedEvent = await parseEvent(event);
-      const claims = event.requestContext.authorizer.jwt.claims;
-      const userId = claims.email;
       if (options?.authorizeJwt === true) {
+        const claims = event.requestContext?.authorizer?.jwt?.claims;
+        const userId = claims.email;
         if (typeof userId !== 'string') {
           logger.error('Invalid email claim, it should be a string but is not, claims:', { claims });
           throw new errors.UnauthorizedError('Unauthorized');

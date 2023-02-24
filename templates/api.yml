@@ -385,6 +385,9 @@ Resources:
                   schema:
                     allOf:
                       - $ref: '#/components/schemas/url'
+                    properties:
+                      target:
+                        readOnly: true
             deleteUrlResponse:
               description: DELETE /urls/{urlId} response
           schemas:
@@ -454,7 +457,7 @@ Resources:
       Type: String
       Description: API Gateway endpoint URL for the API
       Name: !Sub /${ApplicationName}/${EnvironmentName}/api/api-endpoint
-      Value: !Sub https://api.${DomainName}/
+      Value: !Sub https://api.${DomainName}
 
 
 Outputs:

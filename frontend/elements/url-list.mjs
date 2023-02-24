@@ -11,10 +11,11 @@ export default function UrlList({ html, state }) {
 
   const urlListElements = urlList.filter((url) => url.status === 'ACTIVE').map((url) => {
     const shortUrl = `${config.appEndpoint}/go/${url.id}`;
+    const editUrl = `${config.appEndpoint}/urls/${url.id}`;
     const title = url.name ? `${url.name} (${url.target})` : url.target;
     return /* html */ `
       <li id="${url.id}">
-        <div>${title} - <a href="${shortUrl}">${shortUrl}</a></div>
+        <div>${title} - <a href="${shortUrl}">${shortUrl}</a> - <a href="${editUrl}">edit</a></div>
         ${url.description ? /* html */ `<i>${url.description}</i>` : ''}
         <form action="/urls" method="post">
           <input type="hidden" name="method" value="delete" />

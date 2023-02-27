@@ -9,4 +9,18 @@ export const config = {
   },
   apiEndpoint: `${process.env.API_ENDPOINT}`,
   appEndpoint: `${process.env.APP_ENDPOINT}`,
+  colors: {
+    primary: '#aaf',
+    primaryHeavy: '#ccf',
+    primaryLight: '#eef',
+    secondary: '#aff',
+    secondaryHeavy: '#cff',
+    success: '#7f7',
+    error: '#f77',
+    background: '#fff',
+    warn: '#afa',
+    warnHeavy: '#cfc',
+    danger: '#faa',
+    dangerHeavy: '#fcc',
+  },
 };

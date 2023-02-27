@@ -1,11 +1,11 @@
-import CreateUrlForm from './create-url-form.mjs';
-import EditUrlForm from './edit-url-form.mjs';
-import UrlList from './url-list.mjs';
-import MyHeader from './my-header.mjs';
+import * as CreateUrlForm from './create-url-form.mjs';
+import * as EditUrlForm from './edit-url-form.mjs';
+import * as UrlList from './url-list.mjs';
+import * as NavigationBar from './navigation-bar.mjs';
 
 export default {
-  'create-url-form': CreateUrlForm,
-  'edit-url-form': EditUrlForm,
-  'url-list': UrlList,
-  'my-header': MyHeader,
+  [CreateUrlForm.ELEMENT_NAME]: CreateUrlForm.element,
+  [EditUrlForm.ELEMENT_NAME]: EditUrlForm.element,
+  [UrlList.ELEMENT_NAME]: UrlList.element,
+  [NavigationBar.ELEMENT_NAME]: NavigationBar.element,
 };

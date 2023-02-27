@@ -27,6 +27,7 @@ export async function handler(event) {
     elements,
     initialState: {
       ...renderResult.state,
+      path: event.requestContext.http.path,
       session,
     },
   });

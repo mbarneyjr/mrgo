@@ -1,11 +1,20 @@
 import express from 'express';
 import cookie from 'cookie';
+import livereload from 'livereload';
+import connectLivereload from 'connect-livereload';
 
 import { handler } from '../index.mjs';
 import { logger } from '../lib/logger/index.mjs';
 
 const app = express();
 
+const liveReloadServer = livereload.createServer();
+liveReloadServer.server.once('connection', () => {
+  setTimeout(() => {
+    liveReloadServer.refresh('/');
+  }, 50);
+});
+app.use(connectLivereload());
 app.set('query parser', 'simple');
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());

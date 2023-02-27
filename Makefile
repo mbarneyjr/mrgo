@@ -42,6 +42,7 @@ artifacts/template.packaged.yml: template.yml artifacts/dist.zip artifacts/front
 frontend/.env:
 	rm -rf frontend/.env
 	touch frontend/.env
+	echo "LOCAL=true" >> frontend/.env
 	echo "APP_CLIENT_ID=$$(aws ssm get-parameter --query Parameter.Value --output text --name /${APPLICATION_NAME}/${ENVIRONMENT_NAME}/auth/app-client-id)" >> frontend/.env
 	echo "AUTH_BASE_URL=$$(aws ssm get-parameter --query Parameter.Value --output text --name /${APPLICATION_NAME}/${ENVIRONMENT_NAME}/auth/auth-base-url)" >> frontend/.env
 	echo "API_ENDPOINT=$$(aws ssm get-parameter --query Parameter.Value --output text --name /${APPLICATION_NAME}/${ENVIRONMENT_NAME}/api/api-endpoint)" >> frontend/.env

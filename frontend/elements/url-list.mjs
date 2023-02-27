@@ -20,7 +20,7 @@ export function element({ html, state }) {
         <div class="${ELEMENT_NAME}-element-content">
           <b>${title}</b>
           <a href="${shortUrl}">${shortUrl}</a>
-          ${url.description ? /* html */ `<i>${url.description}</i>` : ''}
+          ${url.description ? /* html */ `<i class="${ELEMENT_NAME}-element-description">${url.description}</i>` : ''}
         </div>
         <div class="${ELEMENT_NAME}-element-buttons">
           <a class="${ELEMENT_NAME}-element-button ${ELEMENT_NAME}-edit-button" href="${editUrl}">Edit</a>
@@ -58,7 +58,7 @@ export function element({ html, state }) {
       }
       .${ELEMENT_NAME}-element {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: 3fr 1fr;
         padding: 1rem;
         gap: 1rem;
       }
@@ -71,6 +71,16 @@ export function element({ html, state }) {
         flex-wrap: wrap;
         gap: 1rem;
         align-content: flex-start;
+      }
+      .${ELEMENT_NAME}-element-content {
+        word-break: break-all;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+        gap: 1rem;
+      }
+      .${ELEMENT_NAME}-element-description {
+        word-break: keep-all;
       }
       .${ELEMENT_NAME}-element-buttons form {
         height: fit-content;

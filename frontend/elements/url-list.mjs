@@ -16,18 +16,18 @@ export function element({ html, state }) {
     const editUrl = `${config.appEndpoint}/urls/${url.id}`;
     const title = url.name ? `${url.name} (${url.target})` : url.target;
     return /* html */ `
-      <li class="${ELEMENT_NAME}-element" id="${url.id}">
+      <li class="${ELEMENT_NAME}-element app-card" id="${url.id}">
         <div class="${ELEMENT_NAME}-element-content">
           <b>${title}</b>
           <a href="${shortUrl}">${shortUrl}</a>
           ${url.description ? /* html */ `<i class="${ELEMENT_NAME}-element-description">${url.description}</i>` : ''}
         </div>
         <div class="${ELEMENT_NAME}-element-buttons">
-          <a class="${ELEMENT_NAME}-element-button ${ELEMENT_NAME}-edit-button" href="${editUrl}">Edit</a>
-          <form id="delete-button" class="${ELEMENT_NAME}-element-button-form" action="/urls" method="post">
+          <a class="reset app-btn app-btn-success ${ELEMENT_NAME}-element-button" href="${editUrl}">Edit</a>
+          <form class="${ELEMENT_NAME}-form" action="/urls" method="post">
             <input type="hidden" name="method" value="delete" />
             <input type="hidden" name="id" value="${url.id}" />
-            <input class="${ELEMENT_NAME}-element-button ${ELEMENT_NAME}-delete-button" type="submit" value="Delete" />
+            <input class="reset app-btn app-btn-danger ${ELEMENT_NAME}-element-button" type="submit" value="Delete" />
           </form>
         </div>
       </li>
@@ -35,14 +35,15 @@ export function element({ html, state }) {
   });
 
   const errorHtml = error
-    ? /* html */ `<div id="error-message" class="${ELEMENT_NAME}-error-message">Error: ${error}</div>`
+    ? /* html */ `<div class="error-message" id="error-message">Error: ${error}</div>`
     : '';
   const previousPageHtml = backwardPaginationToken
-    ? /* html */ `<a class="pagination-button pagination-button-back" id="previous-page" href="${config.appEndpoint}/urls?${encode({ paginationToken: backwardPaginationToken })}">← Back</a>`
-    : '';
+    ? /* html */ `<a class="reset app-btn app-btn-primary" id="previous-page" href="${config.appEndpoint}/urls?${encode({ paginationToken: backwardPaginationToken })}">← Back</a>`
+    : '<div></div>';
   const nextPageHtml = forwardPaginationToken
-    ? /* html */ `<a class="pagination-button pagination-button-next" id="next-page" href="${config.appEndpoint}/urls?${encode({ paginationToken: forwardPaginationToken })}">Next →</a>`
-    : '';
+    ? /* html */ `<a class="reset app-btn app-btn-primary" id="next-page" href="${config.appEndpoint}/urls?${encode({ paginationToken: forwardPaginationToken })}">Next →</a>`
+    : '<div></div>';
+
   return html`
     <style>
       .${ELEMENT_NAME}-container {
@@ -52,10 +53,6 @@ export function element({ html, state }) {
       .${ELEMENT_NAME}-page-title {
         text-align: center;
       }
-      .${ELEMENT_NAME}-list {
-        all: none;
-        padding: 0;
-      }
       .${ELEMENT_NAME}-element {
         display: grid;
         grid-template-columns: 3fr 1fr;
@@ -63,7 +60,7 @@ export function element({ html, state }) {
         gap: 1rem;
       }
       .${ELEMENT_NAME}-element:hover {
-        background-color: ${config.colors.secondary};
+        background-color: ${config.colors.background.light};
       }
 
       .${ELEMENT_NAME}-element-buttons {
@@ -82,70 +79,34 @@ export function element({ html, state }) {
       .${ELEMENT_NAME}-element-description {
         word-break: keep-all;
       }
-      .${ELEMENT_NAME}-element-buttons form {
-        height: fit-content;
-      }
       .${ELEMENT_NAME}-element-button {
-        all: unset;
-        cursor: pointer;
         height: fit-content;
         padding: 1rem;
         flex-grow: 1;
         margin: 0;
         text-align: center;
       }
-      .${ELEMENT_NAME}-edit-button {
-        background-color: ${config.colors.warn};
-      }
-      .${ELEMENT_NAME}-edit-button:hover {
-        background-color: ${config.colors.warnHeavy};
-      }
-      .${ELEMENT_NAME}-delete-button {
-        background-color: ${config.colors.danger};
-      }
-      .${ELEMENT_NAME}-delete-button:hover {
-        background-color: ${config.colors.dangerHeavy};
-      }
-      .${ELEMENT_NAME}-element-button-form {
+      .${ELEMENT_NAME}-form {
         flex-grow: 1;
         display: flex;
-        margin: 0;
       }
 
-      .pagination-button {
-        all: unset;
-        background-color: ${config.colors.secondary};
+      .pagination {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
         padding: 1rem;
-        margin: 0 1rem 1rem 1rem;
-        cursor: pointer;
-      }
-      .pagination-button:hover {
-        background-color: ${config.colors.secondaryHeavy};
-      }
-      .pagination-button-back {
-        float: left;
-      }
-      .pagination-button-next {
-        float: right;
-      }
-
-      .${ELEMENT_NAME}-error-message {
-        text-align: center;
-        padding: 1rem;
-        background-color: ${config.colors.error};
-        width: 100%;
-        color: white;
       }
     </style>
     ${errorHtml ?? ''}
-    <h1 id="title" class="${ELEMENT_NAME}-page-title">Your URLs:</h1>
+    <h1 class="${ELEMENT_NAME}-page-title" id="title">Your URLs:</h1>
     <div class="${ELEMENT_NAME}-container">
-      <ul id="url-list" class="${ELEMENT_NAME}-list">
+      <ul class="reset" id="url-list">
         ${urlListElements.length > 0 ? urlListElements.join('') : /* html */ `You don't seem to have any URLs, try creating one!`}
       </ul>
       <div class="pagination">
-        ${previousPageHtml ?? ''}
-        ${nextPageHtml ?? ''}
+        ${previousPageHtml}
+        ${nextPageHtml}
       </div>
     </div>
   `;

@@ -8,7 +8,7 @@
     "node-webtokens": "^1.0.4"
   },
   "scripts": {
-    "start": "nodemon -r dotenv/config local/server.mjs"
+    "start": "nodemon -r -e mjs,html,css dotenv/config local/server.mjs"
   },
   "devDependencies": {
     "connect-livereload": "^0.6.1",

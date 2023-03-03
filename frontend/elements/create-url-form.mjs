@@ -18,44 +18,37 @@ export function element({ html }) {
         display: grid;
         grid-template-columns: auto 1fr;
         gap: 1rem;
+        padding: 1rem;
       }
       .${ELEMENT_NAME}-input-label {
         margin: auto;
         margin-right: 0;
       }
       .${ELEMENT_NAME}-input-field {
-        all: unset;
-        outline: 1px solid ${config.colors.primary};
-        background-color: ${config.colors.primaryLight};
+        background-color: ${config.colors.background.light};
         padding: 1rem;
       }
       .${ELEMENT_NAME}-submit-button {
-        all: unset;
         grid-column: 1 / 3;
         padding: 1rem;
-        background-color: ${config.colors.primary};
         text-align: center;
-        cursor: pointer;
-      }
-      .${ELEMENT_NAME}-submit-button:hover {
-        background-color: ${config.colors.primaryHeavy};
       }
     </style>
     <div class="${ELEMENT_NAME}-container">
       <h1 class="${ELEMENT_NAME}-page-title">Create URL</h1>
-      <form id="create-url-form" action="/urls" method="post" class="${ELEMENT_NAME}-form">
+      <form class="app-card ${ELEMENT_NAME}-form" action="/urls" method="post" id="create-url-form">
         <input type="hidden" name="method" value="create" />
 
         <label class="${ELEMENT_NAME}-input-label" for="name">Name:</label>
-        <input class="${ELEMENT_NAME}-input-field" type="text" id="name" name="name">
+        <input class="form-input-field ${ELEMENT_NAME}-input-field" type="text" id="name" name="name">
 
         <label class="${ELEMENT_NAME}-input-label" for="description">Description:</label>
-        <input class="${ELEMENT_NAME}-input-field" type="text" id="description" name="description">
+        <input class="form-input-field ${ELEMENT_NAME}-input-field" type="text" id="description" name="description">
 
         <label class="${ELEMENT_NAME}-input-label" for="target">Target:</label>
-        <input class="${ELEMENT_NAME}-input-field" type="text" id="target" name="target">
+        <input class="form-input-field ${ELEMENT_NAME}-input-field" type="text" id="target" name="target">
 
-        <input type="submit" value="Create URL" class="${ELEMENT_NAME}-submit-button">
+        <input class="reset app-btn app-btn-success ${ELEMENT_NAME}-submit-button" type="submit" value="Create URL">
       </form>
     </div>
     `;

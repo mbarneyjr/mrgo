@@ -17,20 +17,21 @@ export function element({ html, state }) {
         width: 100%;
         display: flex;
         flex-wrap: wrap;
-        background-color: ${config.colors.primary};
+        background-color: ${config.colors.nav.normal};
       }
       .${ELEMENT_NAME}-link {
         all: unset;
         cursor: pointer;
         padding: 1rem;
         flex-basis: auto;
-        background-color: ${config.colors.primary};
+        background-color: ${config.colors.nav.normal};
+        color: ${config.colors.nav.light};
       }
       .${ELEMENT_NAME}-link:hover {
-        background-color: ${config.colors.primaryHeavy};
+        background-color: ${config.colors.nav.heavy};
       }
       .${ELEMENT_NAME}-active-nav {
-        background-color: ${config.colors.background};
+        background-color: ${config.colors.background.normal};
       }
     </style>
     <nav id="navigation" class="${ELEMENT_NAME}-nav">

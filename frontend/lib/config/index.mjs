@@ -10,17 +10,30 @@ export const config = {
   apiEndpoint: `${process.env.API_ENDPOINT}`,
   appEndpoint: `${process.env.APP_ENDPOINT}`,
   colors: {
-    primary: '#aaf',
-    primaryHeavy: '#ccf',
-    primaryLight: '#eef',
-    secondary: '#aff',
-    secondaryHeavy: '#cff',
-    success: '#7f7',
-    error: '#f77',
-    background: '#fff',
-    warn: '#afa',
-    warnHeavy: '#cfc',
-    danger: '#faa',
-    dangerHeavy: '#fcc',
+    nav: {
+      light: '#808080',
+      normal: '#333333',
+      heavy: '#2C2C2C',
+    },
+    background: {
+      light: '#FFFFFF',
+      normal: '#F3F3F3',
+      heavy: '#E5E5E5',
+    },
+    primary: {
+      light: '#4E9171',
+      normal: '#3D8060',
+      heavy: '#2C7050',
+    },
+    success: {
+      light: '#4589B7',
+      normal: '#3478C6',
+      heavy: '#2367B5',
+    },
+    danger: {
+      light: '#CB584F',
+      normal: '#BA473E',
+      heavy: '#A9362D',
+    },
   },
 };

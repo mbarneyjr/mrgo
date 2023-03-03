@@ -26,6 +26,10 @@ const getUrlsHandler = authMiddleware(async (event, session) => {
       'content-type': 'text/html',
     },
     state: {
+      head: {
+        title: 'URLs',
+        description: 'A list of your URLs',
+      },
       error: errorMessages.join(','),
       urls,
       forwardPaginationToken,

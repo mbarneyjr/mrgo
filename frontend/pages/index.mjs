@@ -11,6 +11,11 @@ export default async function render(event, session) {
     headers: {
       'content-type': 'text/html',
     },
+    state: {
+      head: {
+        description: 'Mr. Go, your friendly neighborhood robotic URL shortener',
+      },
+    },
     session,
   };
 }

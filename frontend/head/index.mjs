@@ -8,7 +8,10 @@ import { config } from '../lib/config/index.mjs';
 
 /* eslint-disable-next-line no-unused-vars */
 export default function Head(event, state) {
-  const title = 'Mr. Go';
+  const title = state?.head?.title
+    ? `${state.head.title} - Mr. Go`
+    : 'Mr. Go';
+  const description = state?.head?.description ?? '';
   const devHtml = process.env.LOCAL === 'true'
     ? /* html */ `<script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>`
     : '';
@@ -18,11 +21,13 @@ export default function Head(event, state) {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="theme-color" content="${config.colors.nav.normal}">
+      <meta name="description" content="${description}">
       <title>${title}</title>
       <link rel="icon" href="/static/favicon.ico">
       ${devHtml}
       <style>
-        html body {
+        body {
           margin: 0;
           font-family: 'Arial';
           background-color: ${config.colors.background.normal};

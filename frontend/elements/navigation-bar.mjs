@@ -25,13 +25,15 @@ export function element({ html, state }) {
         padding: 1rem;
         flex-basis: auto;
         background-color: ${config.colors.nav.normal};
-        color: ${config.colors.nav.light};
+        color: ${config.colors.background.normal};
       }
       .${ELEMENT_NAME}-link:hover {
         background-color: ${config.colors.nav.heavy};
+        color: ${config.colors.background.normal};
       }
       .${ELEMENT_NAME}-active-nav {
         background-color: ${config.colors.background.normal};
+        color: ${config.colors.nav.normal};
       }
     </style>
     <nav id="navigation" class="${ELEMENT_NAME}-nav">

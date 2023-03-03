@@ -26,6 +26,10 @@ const getUrlHandler = authMiddleware(async (event, session) => {
       'content-type': 'text/html',
     },
     state: {
+      head: {
+        title: url?.name,
+        description: url?.description,
+      },
       error: errorMessages.join(','),
       url,
       successfullyUpdatedUrl: event.queryStringParameters?.successfullyUpdatedUrl === 'true',

@@ -11,6 +11,12 @@ export default async function render(event, session) {
     headers: {
       'content-type': 'text/html',
     },
+    state: {
+      head: {
+        title: 'Not Found',
+        description: 'Mr. Go\'s 500 page',
+      },
+    },
     session,
     statusCode: 404,
   };

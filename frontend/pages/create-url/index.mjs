@@ -26,6 +26,10 @@ const getUrlsHandler = authMiddleware(async (event, session) => {
       'content-type': 'text/html',
     },
     state: {
+      head: {
+        title: 'Create Url',
+        description: 'Create a url redirect',
+      },
       error: errorMessages.join(','),
       urls,
       forwardPaginationToken,

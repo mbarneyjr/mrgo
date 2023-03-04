@@ -156,12 +156,26 @@ export function element({ html }) {
         left: 20px;
         border: 4px solid black;
         border-radius: 0 0 16px 16px;
+      }
+      .mrgo-teeth {
+        position: absolute;
+        width: 160px;
+        height: 24px;
+        top: 0px;
+        left: 0px;
+        border-radius: 0 0 16px 16px;
+        animation: moving-teeth 1000ms linear forwards infinite;
         background-color: #FFF;
         background-image:
           linear-gradient(to right, #000 2px, transparent 0px),
           linear-gradient(to bottom, #000 2px, transparent 0px);
         background-size: 16px 16px;
         background-position: 8px 27px;
+      }
+
+      @keyframes moving-teeth {
+        0% { background-position: 8px 27px; }
+        100% { background-position: -8px 27px; }
       }
 
       .mrgo-ear {
@@ -202,7 +216,9 @@ export function element({ html }) {
           <div class="mrgo-pupil"></div>
         </div>
         <div class="mrgo-mustache"></div>
-        <div class="mrgo-mouth"></div>
+        <div class="mrgo-mouth">
+          <div class="mrgo-teeth"></div>
+        </div>
       </div>
       <div class="mrgo-ear mrgo-ear-right"></div>
     </div>

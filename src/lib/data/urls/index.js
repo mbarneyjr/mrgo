@@ -5,6 +5,7 @@ const {
 
 const { default: ShortUniqueId } = require('short-unique-id');
 
+const { logger, errorJson } = require('../../logger/index');
 const config = require('../../config');
 const errors = require('../../errors');
 
@@ -127,26 +128,44 @@ exports.listUrls = async (userId, limit, paginationToken) => {
 exports.createUrl = async (item, userId) => {
   if (!item.target) throw new errors.ValidationError('missing url target');
   const targetWithProtocol = item.target.includes('://') ? item.target : `https://${item.target}`;
-  const urlId = exports.uuid();
   const status = item.status || 'ACTIVE';
-  const dynamodbItem = {
-    ...item,
-    status,
-    id: urlId,
-    userId,
-    target: targetWithProtocol,
-  };
-  await exports.dbc().send(new PutCommand({
-    TableName: config.dynamodb.tableName,
-    Item: dynamodbItem,
-  }));
-  return {
-    id: urlId,
-    name: dynamodbItem.name,
-    description: dynamodbItem.description,
-    target: dynamodbItem.target,
-    status,
-  };
+
+  let attempts = 0;
+  while (attempts < 3) {
+    attempts += 1;
+    try {
+      const urlId = exports.uuid();
+      const dynamodbItem = {
+        ...item,
+        status,
+        id: urlId,
+        userId,
+        target: targetWithProtocol,
+      };
+      await exports.dbc().send(new PutCommand({
+        TableName: config.dynamodb.tableName,
+        Item: dynamodbItem,
+        ConditionExpression: 'attribute_not_exists(#id)',
+        ExpressionAttributeNames: {
+          '#id': 'id',
+        },
+      }));
+      return {
+        id: urlId,
+        name: dynamodbItem.name,
+        description: dynamodbItem.description,
+        target: dynamodbItem.target,
+        status,
+      };
+    } catch (err) {
+      if (!(err instanceof ConditionalCheckFailedException)) {
+        logger.error('could not create URL', { error: errorJson(err), userId, createRequest: item });
+        throw err;
+      }
+      logger.warn('uuid created key that already exists, retrying', { error: errorJson(err), userId, createRequest: item });
+    }
+  }
+  throw new errors.InternalServerError('could not create url, we are experiencing issues');
 };
 
 /** @type {import('./index').getUrl} */

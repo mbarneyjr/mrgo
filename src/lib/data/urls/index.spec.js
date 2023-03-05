@@ -239,6 +239,51 @@ describe('src/lib/data/urls/index.js', async () => {
         status: 'ACTIVE',
       }, 'unittest')).to.eventually.be.rejectedWith(errors.ValidationError);
     });
+
+    it('should automatically retry if duplicate uuids generated causing dynamodb condition check to fail', async () => {
+      sandbox.stub(urlLib.dbc(), 'send')
+        .onFirstCall()
+        .rejects(new ConditionalCheckFailedException({ $metadata: {}, message: 'the thing failed' }))
+        .onSecondCall()
+        .resolves();
+      sandbox.stub(urlLib, 'uuid').returns('test-id');
+      const result = await urlLib.createUrl({
+        name: 'test-name',
+        description: 'test-description',
+        target: 'https://mbarney.me',
+        status: 'ACTIVE',
+      }, 'unittest');
+      expect(result).to.deep.equal({
+        id: 'test-id',
+        name: 'test-name',
+        description: 'test-description',
+        target: 'https://mbarney.me',
+        status: 'ACTIVE',
+      });
+    });
+
+    it('should limit retry if duplicate uuids generated causing dynamodb condition check to fail', async () => {
+      sandbox.stub(urlLib.dbc(), 'send').rejects(new ConditionalCheckFailedException({ $metadata: {}, message: 'the thing failed' }));
+      sandbox.stub(urlLib, 'uuid').returns('test-id');
+      await expect(urlLib.createUrl({
+        name: 'test-name',
+        description: 'test-description',
+        target: 'https://mbarney.me',
+        status: 'ACTIVE',
+      }, 'unittest')).to.eventually.be.rejectedWith(errors.InternalServerError);
+    }).timeout(6000);
+
+    it('should fail if dynamodb throws', async () => {
+      sandbox.stub(urlLib.dbc(), 'send')
+        .rejects(new Error('something bad happened'));
+      sandbox.stub(urlLib, 'uuid').returns('test-id');
+      await expect(urlLib.createUrl({
+        name: 'test-name',
+        description: 'test-description',
+        target: 'https://mbarney.me',
+        status: 'ACTIVE',
+      }, 'unittest')).to.eventually.be.rejectedWith(Error);
+    });
   });
 
   describe('getUrl', async () => {

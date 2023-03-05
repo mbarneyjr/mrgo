@@ -5,7 +5,7 @@ const apiSchemaBuilder = require('api-schema-builder');
 const errors = require('../errors');
 const { logger, errorJson } = require('../logger');
 
-/** @type {Record<string, string>} */
+/** @type {Record<string, string | number | boolean>} */
 const commonHeaders = {
   'Access-Control-Allow-Origin': '*',
 };
@@ -93,7 +93,6 @@ exports.apiWrapper = (handlerFunction, options) => {
       /** @type {import('./wrapper').validateEvent<object>} */
       exports.validateEvent(parsedEvent);
 
-      /** @type {import('aws-lambda').APIGatewayProxyResultV2} */
       const lambdaResult = {
         statusCode: 200,
         headers: commonHeaders,
@@ -104,7 +103,7 @@ exports.apiWrapper = (handlerFunction, options) => {
       } else if (result === undefined) {
         lambdaResult.body = 'OK';
       } else if (result instanceof Object && 'statusCode' in result) {
-        lambdaResult.statusCode = result.statusCode;
+        lambdaResult.statusCode = result.statusCode ?? 200;
         lambdaResult.headers = {
           ...commonHeaders,
           ...result.headers,
@@ -114,6 +113,7 @@ exports.apiWrapper = (handlerFunction, options) => {
         lambdaResult.isBase64Encoded = result.isBase64Encoded;
       } else {
         lambdaResult.body = JSON.stringify(result);
+        lambdaResult.headers['content-type'] = 'application/json';
       }
       return lambdaResult;
     } catch (err) {

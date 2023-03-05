@@ -79,3 +79,9 @@ Outputs:
   AppEndpoint:
     Value: !GetAtt Frontend.Outputs.AppEndpoint
     Description: App endpoint URL for the frontend
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !GetAtt Auth.Outputs.UserPoolId
+  AppClientId:
+    Description: Cognito App Client ID
+    Value: !GetAtt Auth.Outputs.AppClientId

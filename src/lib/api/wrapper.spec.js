@@ -59,6 +59,19 @@ describe('src/lib/api/wrapper.js', async () => {
       expect(JSON.parse(result.body)).to.deep.equal({ message: 'success' });
     });
 
+    it('should support returning entire http with undefined statusCode', async () => {
+      const unwrapped = sandbox.stub().resolves({ statusCode: undefined, body: JSON.stringify({ message: 'success' }) });
+      const wrapped = apiWrapper(unwrapped);
+      const event = getApiGatewayLambdaEvent({
+        method: 'GET',
+        path: '/urls',
+      });
+      const result = await wrapped(event, getApiGatewayLambdaContext());
+      expect(result.statusCode).to.equal(200);
+      if (!result.body) throw expect.fail('result body was undefined');
+      expect(JSON.parse(result.body)).to.deep.equal({ message: 'success' });
+    });
+
     it('should handle options.authorizeJwt', async () => {
       const unwrapped = sandbox.stub().resolves({ message: 'success' });
       const wrapped = apiWrapper(unwrapped, { authorizeJwt: true });

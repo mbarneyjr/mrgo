@@ -32,7 +32,7 @@ module.exports = {
     'import/no-cycle': 'off',
     'import/no-extraneous-dependencies': ['error', {
       devDependencies: true,
-      packageDir: [__dirname, `${__dirname}/src`, `${__dirname}/frontend`],
+      packageDir: [__dirname, `${__dirname}/src`, `${__dirname}/frontend`, `${__dirname}/integration-tests`],
     }],
   },
   overrides: [{

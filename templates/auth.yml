@@ -56,6 +56,11 @@ Resources:
       SupportedIdentityProviders:
         - COGNITO
       PreventUserExistenceErrors: ENABLED
+      ExplicitAuthFlows:
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_ADMIN_USER_PASSWORD_AUTH
       CallbackURLs:
         - !Sub https://${DomainName}/oauth2/idresponse
         - !If

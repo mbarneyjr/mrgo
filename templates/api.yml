@@ -267,13 +267,7 @@ Resources:
                 payloadFormatVersion: '2.0'
                 type: aws_proxy
                 uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateUrl.Arn}/invocations
-              requestBody:
-                description: POST /urls request
-                required: true
-                content:
-                  application/json:
-                    schema:
-                      $ref: '#/components/schemas/url'
+              requestBody: { $ref: '#/components/requestBodies/createUrlRequest' }
               responses:
                 '200': { $ref: '#/components/responses/createUrlResponse' }
           /urls/{urlId}:
@@ -315,13 +309,7 @@ Resources:
                   description: The name of the URL
                   schema: { type: string }
                   required: true
-              requestBody:
-                description: PUT /urls/{urlId} request
-                required: true
-                content:
-                  application/json:
-                    schema:
-                      $ref: '#/components/schemas/url'
+              requestBody: { $ref: '#/components/requestBodies/updateUrlRequest' }
               responses:
                 '200': { $ref: '#/components/responses/updateUrlResponse' }
             delete:
@@ -346,7 +334,32 @@ Resources:
               responses:
                 '200': { $ref: '#/components/responses/deleteUrlResponse' }
         components:
-          requestBodies: {}
+          requestBodies:
+            createUrlRequest:
+              description: Create url request
+              required: true
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      name: { $ref: '#/components/schemas/url-name' }
+                      description: { $ref: '#/components/schemas/url-description' }
+                      target: { $ref: '#/components/schemas/url-target' }
+                      status: { $ref: '#/components/schemas/url-status' }
+            updateUrlRequest:
+              description: Update url request
+              required: true
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      name: { $ref: '#/components/schemas/url-name' }
+                      description: { $ref: '#/components/schemas/url-description' }
+                      status: { $ref: '#/components/schemas/url-status' }
           responses:
             getDocumentationResponse:
               description: GET /docs response
@@ -383,11 +396,7 @@ Resources:
               content:
                 application/json:
                   schema:
-                    allOf:
-                      - $ref: '#/components/schemas/url'
-                    properties:
-                      target:
-                        readOnly: true
+                    $ref: '#/components/schemas/url'
             deleteUrlResponse:
               description: DELETE /urls/{urlId} response
           schemas:
@@ -416,26 +425,30 @@ Resources:
               type: object
               additionalProperties: false
               properties:
-                id:
-                  type: string
-                  description: the ID of the URL (slug that's used to redirect)
-                  readOnly: true
-                name:
-                  type: string
-                  description: the user-defined name of the URL
-                description:
-                  type: string
-                  description: the user-defined description of the URL
-                target:
-                  type: string
-                  description: the target https URL to redirect to
-                status:
-                  type: string
-                  enum:
-                    - ACTIVE
-                    - INACTIVE
-                    - DELETED
-                  description: the status of the URL
+                id: { $ref: '#/components/schemas/url-id' }
+                name: { $ref: '#/components/schemas/url-name' }
+                description: { $ref: '#/components/schemas/url-description' }
+                target: { $ref: '#/components/schemas/url-target' }
+                status: { $ref: '#/components/schemas/url-status' }
+            url-id:
+              type: string
+              description: the ID of the URL (slug that's used to redirect)
+              readOnly: true
+            url-name:
+              type: string
+              description: the user-defined name of the URL
+            url-description:
+              type: string
+              description: the user-defined description of the URL
+            url-target:
+              type: string
+              description: the target https URL to redirect to
+            url-status:
+              type: string
+              enum:
+                - ACTIVE
+                - INACTIVE
+              description: the status of the URL
           securitySchemes:
             CognitoAuth:
               in: header

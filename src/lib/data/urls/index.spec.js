@@ -23,24 +23,30 @@ describe('src/lib/data/urls/index.js', async () => {
 
   describe('listUrls', async () => {
     it('should return a list of urls', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
-        Items: [{
-          id: 'test-id',
-          name: 'test-name',
-          description: 'test-description',
-          target: 'https://mbarney.me',
-          status: 'INACTIVE',
-        }, {
-          id: 'future-id',
-          name: 'future-name',
-          description: 'future-description',
-          target: 'https://mbarney.me',
-          status: 'INACTIVE',
-        }],
-        LastEvaluatedKey: {
-          id: 'test-id',
-        },
-      });
+      sandbox.stub(urlLib.dbc(), 'send')
+        .onFirstCall()
+        .resolves({
+          Items: [{
+            id: 'test-id',
+            name: 'test-name',
+            description: 'test-description',
+            target: 'https://mbarney.me',
+            status: 'ACTIVE',
+          }, {
+            id: 'future-id',
+            name: 'future-name',
+            description: 'future-description',
+            target: 'https://mbarney.me',
+            status: 'ACTIVE',
+          }],
+          LastEvaluatedKey: {
+            id: 'test-id',
+          },
+        })
+        .onSecondCall()
+        .resolves({
+          Items: [],
+        });
       const result = await urlLib.listUrls('test-userId', 10);
       expect(result).to.deep.equal({
         urls: [{
@@ -48,10 +54,16 @@ describe('src/lib/data/urls/index.js', async () => {
           name: 'test-name',
           description: 'test-description',
           target: 'https://mbarney.me',
-          status: 'INACTIVE',
+          status: 'ACTIVE',
+        }, {
+          id: 'future-id',
+          name: 'future-name',
+          description: 'future-description',
+          target: 'https://mbarney.me',
+          status: 'ACTIVE',
         }],
         backwardPaginationToken: undefined,
-        forwardPaginationToken: Buffer.from(JSON.stringify({ direction: 'forward', exclusiveStartKey: { id: 'test-id' } })).toString('base64'),
+        forwardPaginationToken: undefined,
       });
     });
 
@@ -62,19 +74,19 @@ describe('src/lib/data/urls/index.js', async () => {
           name: 'test-name',
           description: 'test-description',
           target: 'https://mbarney.me',
-          status: 'INACTIVE',
+          status: 'ACTIVE',
         }, {
           id: 'intermediate-id',
           name: 'intermediate-name',
           description: 'intermediate-description',
           target: 'https://mbarney.me',
-          status: 'INACTIVE',
+          status: 'ACTIVE',
         }, {
           id: 'future-id',
           name: 'future-name',
           description: 'future-description',
           target: 'https://mbarney.me',
-          status: 'INACTIVE',
+          status: 'ACTIVE',
         }],
         LastEvaluatedKey: {
           id: 'test-id',
@@ -85,7 +97,7 @@ describe('src/lib/data/urls/index.js', async () => {
         direction: 'backward',
         exclusiveStartKey: { id: 'past-id' },
       })).toString('base64');
-      const result = await urlLib.listUrls('test-userId', 10, backwardPaginationToken);
+      const result = await urlLib.listUrls('test-userId', 2, backwardPaginationToken);
 
       expect(result).to.deep.equal({
         urls: [{
@@ -93,13 +105,13 @@ describe('src/lib/data/urls/index.js', async () => {
           name: 'intermediate-name',
           description: 'intermediate-description',
           target: 'https://mbarney.me',
-          status: 'INACTIVE',
+          status: 'ACTIVE',
         }, {
           id: 'test-id',
           name: 'test-name',
           description: 'test-description',
           target: 'https://mbarney.me',
-          status: 'INACTIVE',
+          status: 'ACTIVE',
         }],
         backwardPaginationToken: Buffer.from(JSON.stringify({ direction: 'backward', exclusiveStartKey: { id: 'intermediate-id' } })).toString('base64'),
         forwardPaginationToken: Buffer.from(JSON.stringify({ direction: 'forward', exclusiveStartKey: { id: 'test-id' } })).toString('base64'),
@@ -129,6 +141,8 @@ describe('src/lib/data/urls/index.js', async () => {
       const response = await urlLib.listUrls('test-userId', 10);
       expect(response).to.deep.equal({
         urls: [],
+        backwardPaginationToken: undefined,
+        forwardPaginationToken: undefined,
       });
     });
 
@@ -235,7 +249,7 @@ describe('src/lib/data/urls/index.js', async () => {
           name: 'test-name',
           description: 'test-description',
           target: 'https://mbarney.me',
-          status: 'INACTIVE',
+          status: 'ACTIVE',
           userId: 'test-userId',
         },
       });
@@ -245,12 +259,27 @@ describe('src/lib/data/urls/index.js', async () => {
         name: 'test-name',
         description: 'test-description',
         target: 'https://mbarney.me',
-        status: 'INACTIVE',
+        status: 'ACTIVE',
       });
     });
+
     it('should throw a NotFoundError if userId is not the same', async () => {
       sandbox.stub(urlLib.dbc(), 'send').resolves({
         Item: undefined,
+      });
+      await expect(urlLib.getUrl('test-urlId')).to.be.eventually.rejectedWith(errors.NotFoundError);
+    });
+
+    it('should throw a NotFoundError if status is not ACTIVE', async () => {
+      sandbox.stub(urlLib.dbc(), 'send').resolves({
+        Item: {
+          id: 'test-id',
+          name: 'test-name',
+          description: 'test-description',
+          target: 'https://mbarney.me',
+          status: 'INACTIVE',
+          userId: 'test-userId',
+        },
       });
       await expect(urlLib.getUrl('test-urlId')).to.be.eventually.rejectedWith(errors.NotFoundError);
     });

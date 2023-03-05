@@ -1,6 +1,6 @@
 const { DynamoDBClient, ConditionalCheckFailedException } = require('@aws-sdk/client-dynamodb');
 const {
-  DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand, UpdateCommand, DeleteCommand,
+  DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand, UpdateCommand,
 } = require('@aws-sdk/lib-dynamodb');
 
 const { default: ShortUniqueId } = require('short-unique-id');
@@ -56,34 +56,44 @@ exports.listUrls = async (userId, limit, paginationToken) => {
   const queryParams = {
     TableName: config.dynamodb.tableName,
     IndexName: config.dynamodb.indexes.byUserId,
-    // always query for one more than the limit so we know if there's another page
-    Limit: limit + 1,
+    Limit: 4,
     KeyConditionExpression: '#userId = :userId',
+    FilterExpression: '#status <> :deleted',
     ExpressionAttributeNames: {
       '#userId': 'userId',
+      '#status': 'status',
     },
     ExpressionAttributeValues: {
       ':userId': userId,
+      ':deleted': 'DELETED',
     },
     ExclusiveStartKey: exclusiveStartKey,
     ScanIndexForward: requestedDirection === 'forward',
   };
 
-  const response = await exports.dbc().send(new QueryCommand(queryParams));
-  if (!response.Items) return { urls: [] };
-  // if response.LastEvaluatedKey is present, we have more pagination to do
-  const hasMoreResults = response.LastEvaluatedKey !== undefined;
-  if (hasMoreResults) response.Items?.pop();
+  let responseItems = [];
+  let hasMoreResults = true;
+
+  while (responseItems.length < limit && hasMoreResults) {
+    const response = await exports.dbc().send(new QueryCommand(queryParams));
+    if (response.Items) responseItems = responseItems.concat(response.Items);
+    // if response.LastEvaluatedKey is present, we have more pagination to do
+    hasMoreResults = response.LastEvaluatedKey !== undefined;
+    queryParams.ExclusiveStartKey = response.LastEvaluatedKey;
+  }
+
+  responseItems = responseItems.slice(0, limit);
+
   // keep page ordering for backward pagination
   if (requestedDirection === 'backward') {
-    response.Items?.reverse();
+    responseItems.reverse();
   }
 
   let forwardPaginationToken;
   if ((requestedDirection === 'backward' || hasMoreResults)) {
     const forwardPaginationObject = {
       direction: 'forward',
-      exclusiveStartKey: makeKey(response.Items[response.Items.length - 1]),
+      exclusiveStartKey: makeKey(responseItems[responseItems.length - 1]),
     };
     forwardPaginationToken = Buffer.from(JSON.stringify(forwardPaginationObject)).toString('base64');
   }
@@ -93,12 +103,12 @@ exports.listUrls = async (userId, limit, paginationToken) => {
   if (!requestedFirstPage && (requestedDirection === 'forward' || hasMoreResults)) {
     const backwardPaginationObject = {
       direction: 'backward',
-      exclusiveStartKey: makeKey(response.Items[0]),
+      exclusiveStartKey: makeKey(responseItems[0]),
     };
     backwardPaginationToken = Buffer.from(JSON.stringify(backwardPaginationObject)).toString('base64');
   }
 
-  const urls = /** @type {import('./index').Url[]} */ (response.Items?.map((item) => ({
+  const urls = /** @type {import('./index').Url[]} */ (responseItems?.map((item) => ({
     id: item.id,
     name: item.name,
     description: item.description,
@@ -148,13 +158,16 @@ exports.getUrl = async (urlId) => {
     },
   }));
   if (!result?.Item) throw new errors.NotFoundError('url not found', { id: urlId });
-  return {
+  /** @type {import('./index').Url} */
+  const url = {
     id: result.Item.id,
     name: result.Item.name,
     description: result.Item.description,
     target: result.Item.target,
     status: result.Item.status,
   };
+  if (url.status !== 'ACTIVE') throw new errors.NotFoundError('url not found', { id: urlId });
+  return url;
 };
 
 /** @type {import('./index').putUrl} */
@@ -246,20 +259,33 @@ exports.putUrl = async (urlUpdateRequest, urlId, userId) => {
 
 /** @type {import('./index').deleteUrl} */
 exports.deleteUrl = async (urlId, userId) => {
+  const expressionAttributeNames = {
+    '#userId': 'userId',
+    '#status': 'status',
+  };
+  const expressionAttributeValues = {
+    ':userId': userId,
+    ':status': 'DELETED',
+  };
+  const setUpdateExpressions = [
+    '#status=:status',
+  ];
+
+  /** @type {import('@aws-sdk/lib-dynamodb').UpdateCommandInput} */
+  const updateParams = {
+    TableName: config.dynamodb.tableName,
+    Key: {
+      id: urlId,
+    },
+    UpdateExpression: `SET ${setUpdateExpressions.join(', ')}`,
+    ConditionExpression: '#userId = :userId',
+    ExpressionAttributeNames: expressionAttributeNames,
+    ExpressionAttributeValues: expressionAttributeValues,
+    ReturnValues: 'ALL_NEW',
+  };
+
   try {
-    await exports.dbc().send(new DeleteCommand({
-      TableName: config.dynamodb.tableName,
-      Key: {
-        id: urlId,
-      },
-      ConditionExpression: '#userId = :userId',
-      ExpressionAttributeNames: {
-        '#userId': 'userId',
-      },
-      ExpressionAttributeValues: {
-        ':userId': userId,
-      },
-    }));
+    await exports.dbc().send(new UpdateCommand(updateParams));
   } catch (err) {
     if (!(err instanceof ConditionalCheckFailedException)) {
       throw err;

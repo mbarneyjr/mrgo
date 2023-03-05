@@ -11,7 +11,7 @@ const { expect } = chai;
 
 const integrationTestId = randomUUID();
 
-describe.only(`URL management [${integrationTestId}]`, async () => {
+describe(`URL management [${integrationTestId}]`, async () => {
   let token = '';
   const apigwBaseUrl = process.env.API_ENDPOINT;
   const userPoolId = process.env.USER_POOL_ID;
@@ -44,13 +44,13 @@ describe.only(`URL management [${integrationTestId}]`, async () => {
     expect(response.status).equals(200);
     expect(response.headers.get('content-type')).equals('application/json');
     const body = await response.text();
-    expect(() => JSON.parse(body)).to.not.throw('response was not well-formatted json');
+    expect(() => JSON.parse(body)).to.not.throw(null, 'response was not well-formatted json');
     const parsedBody = JSON.parse(body);
     expect(parsedBody).to.haveOwnProperty('id');
-    expect(parsedBody?.target).to.equal('https://google.com', 'expected url target not found');
-    expect(parsedBody?.name).to.equal('foo', 'expected url name not found');
-    expect(parsedBody?.description).to.equal('bar', 'expected url description not found');
-    expect(parsedBody?.status).to.equal('ACTIVE', 'expected url status not found');
+    expect(parsedBody).to.haveOwnProperty('target', 'https://google.com', 'expected url target not found');
+    expect(parsedBody).to.haveOwnProperty('name', 'foo', 'expected url name not found');
+    expect(parsedBody).to.haveOwnProperty('description', 'bar', 'expected url description not found');
+    expect(parsedBody).to.haveOwnProperty('status', 'ACTIVE', 'expected url status not found');
     createdUrlId = parsedBody.id;
   });
 
@@ -63,34 +63,30 @@ describe.only(`URL management [${integrationTestId}]`, async () => {
     expect(response.status).equals(200);
     expect(response.headers.get('content-type')).equals('application/json');
     const body = await response.text();
-    expect(() => JSON.parse(body)).to.not.throw('response was not well-formatted json');
+    expect(() => JSON.parse(body)).to.not.throw(null, 'response was not well-formatted json');
     const parsedBody = JSON.parse(body);
     expect(parsedBody).to.haveOwnProperty('urls');
     expect(parsedBody.urls).to.be.instanceOf(Array);
     const createdUrl = parsedBody.urls.find((url) => url.id === createdUrlId);
-    expect(createdUrl?.id).to.equal(createdUrlId, 'expected url id not found');
-    expect(createdUrl?.target).to.equal('https://google.com', 'expected url target not found');
-    expect(createdUrl?.name).to.equal('foo', 'expected url name not found');
-    expect(createdUrl?.description).to.equal('bar', 'expected url description not found');
-    expect(createdUrl?.status).to.equal('ACTIVE', 'expected url status not found');
+    expect(createdUrl).to.haveOwnProperty('id', createdUrlId, 'expected url id not found');
+    expect(createdUrl).to.haveOwnProperty('target', 'https://google.com', 'expected url target not found');
+    expect(createdUrl).to.haveOwnProperty('name', 'foo', 'expected url name not found');
+    expect(createdUrl).to.haveOwnProperty('description', 'bar', 'expected url description not found');
+    expect(createdUrl).to.haveOwnProperty('status', 'ACTIVE', 'expected url status not found');
   });
 
   it('can get URL directly', async () => {
-    const response = await fetch(`${apigwBaseUrl}/urls/${createdUrlId}`, {
-      headers: {
-        Authorization: token,
-      },
-    });
+    const response = await fetch(`${apigwBaseUrl}/urls/${createdUrlId}`);
     expect(response.status).equals(200);
     expect(response.headers.get('content-type')).equals('application/json');
     const body = await response.text();
-    expect(() => JSON.parse(body)).to.not.throw('response was not well-formatted json');
+    expect(() => JSON.parse(body)).to.not.throw(null, 'response was not well-formatted json');
     const parsedBody = JSON.parse(body);
-    expect(parsedBody?.id).to.equal(createdUrlId, 'expected url id not found');
-    expect(parsedBody?.target).to.equal('https://google.com', 'expected url target not found');
-    expect(parsedBody?.name).to.equal('foo', 'expected url name not found');
-    expect(parsedBody?.description).to.equal('bar', 'expected url description not found');
-    expect(parsedBody?.status).to.equal('ACTIVE', 'expected url status not found');
+    expect(parsedBody).to.haveOwnProperty('id', createdUrlId, 'expected url id not found');
+    expect(parsedBody).to.haveOwnProperty('target', 'https://google.com', 'expected url target not found');
+    expect(parsedBody).to.haveOwnProperty('name', 'foo', 'expected url name not found');
+    expect(parsedBody).to.haveOwnProperty('description', 'bar', 'expected url description not found');
+    expect(parsedBody).to.haveOwnProperty('status', 'ACTIVE', 'expected url status not found');
   });
 
   it('can update URL', async () => {
@@ -106,13 +102,13 @@ describe.only(`URL management [${integrationTestId}]`, async () => {
     expect(response.status).equals(200);
     expect(response.headers.get('content-type')).equals('application/json');
     const body = await response.text();
-    expect(() => JSON.parse(body)).to.not.throw('response was not well-formatted json');
+    expect(() => JSON.parse(body)).to.not.throw(null, 'response was not well-formatted json');
     const parsedBody = JSON.parse(body);
-    expect(parsedBody?.id).to.equal(createdUrlId, 'expected url id not found');
-    expect(parsedBody?.target).to.equal('https://google.com', 'expected url target not found');
-    expect(parsedBody?.name).to.equal('foo', 'expected url name not found');
-    expect(parsedBody?.description).to.equal('baz', 'expected url description not found');
-    expect(parsedBody?.status).to.equal('ACTIVE', 'expected url status not found');
+    expect(parsedBody).to.haveOwnProperty('id', createdUrlId, 'expected url id not found');
+    expect(parsedBody).to.haveOwnProperty('target', 'https://google.com', 'expected url target not found');
+    expect(parsedBody).to.haveOwnProperty('name', 'foo', 'expected url name not found');
+    expect(parsedBody).to.haveOwnProperty('description', 'baz', 'expected url description not found');
+    expect(parsedBody).to.haveOwnProperty('status', 'ACTIVE', 'expected url status not found');
   });
 
   it('can get updated URL', async () => {
@@ -124,13 +120,13 @@ describe.only(`URL management [${integrationTestId}]`, async () => {
     expect(response.status).equals(200);
     expect(response.headers.get('content-type')).equals('application/json');
     const body = await response.text();
-    expect(() => JSON.parse(body)).to.not.throw('response was not well-formatted json');
+    expect(() => JSON.parse(body)).to.not.throw(null, 'response was not well-formatted json');
     const parsedBody = JSON.parse(body);
-    expect(parsedBody?.id).to.equal(createdUrlId, 'expected url id not found');
-    expect(parsedBody?.target).to.equal('https://google.com', 'expected url target not found');
-    expect(parsedBody?.name).to.equal('foo', 'expected url name not found');
-    expect(parsedBody?.description).to.equal('baz', 'expected url description not found');
-    expect(parsedBody?.status).to.equal('ACTIVE', 'expected url status not found');
+    expect(parsedBody).to.haveOwnProperty('id', createdUrlId, 'expected url id not found');
+    expect(parsedBody).to.haveOwnProperty('target', 'https://google.com', 'expected url target not found');
+    expect(parsedBody).to.haveOwnProperty('name', 'foo', 'expected url name not found');
+    expect(parsedBody).to.haveOwnProperty('description', 'baz', 'expected url description not found');
+    expect(parsedBody).to.haveOwnProperty('status', 'ACTIVE', 'expected url status not found');
   });
 
   it('can delete URL', async () => {
@@ -152,11 +148,22 @@ describe.only(`URL management [${integrationTestId}]`, async () => {
     expect(response.status).equals(200);
     expect(response.headers.get('content-type')).equals('application/json');
     const body = await response.text();
-    expect(() => JSON.parse(body)).to.not.throw('response was not well-formatted json');
+    expect(() => JSON.parse(body)).to.not.throw(null, 'response was not well-formatted json');
     const parsedBody = JSON.parse(body);
     expect(parsedBody).to.haveOwnProperty('urls');
     expect(parsedBody.urls).to.be.instanceOf(Array);
     const createdUrl = parsedBody.urls.find((url) => url.id === createdUrlId);
     expect(createdUrl).to.equal(undefined, `unexpected url returned in GET /urls (${createdUrlId})`);
+  });
+
+  it('can no longer get the URL durectly', async () => {
+    const response = await fetch(`${apigwBaseUrl}/urls/${createdUrlId}`);
+    expect(response.status).equals(404);
+    expect(response.headers.get('content-type')).equals('application/json');
+    const body = await response.text();
+    expect(() => JSON.parse(body)).to.not.throw(null, 'response was not well-formatted json');
+    const parsedBody = JSON.parse(body);
+    expect(parsedBody).to.haveOwnProperty('error');
+    expect(parsedBody.error).to.haveOwnProperty('code', 'NOT_FOUND');
   });
 });

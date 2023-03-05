@@ -27,6 +27,7 @@ module.exports = {
     'quote-props': ['error', 'consistent-as-needed'],
     'arrow-body-style': 'off',
     'no-restricted-syntax': 'off',
+    'no-await-in-loop': 'off',
     'import/extensions': 'off',
     'import/prefer-default-export': 'off',
     'import/no-cycle': 'off',

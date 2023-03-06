@@ -57,7 +57,6 @@ exports.listUrls = async (userId, limit, paginationToken) => {
   const queryParams = {
     TableName: config.dynamodb.tableName,
     IndexName: config.dynamodb.indexes.byUserId,
-    Limit: 4,
     KeyConditionExpression: '#userId = :userId',
     FilterExpression: '#status <> :deleted',
     ExpressionAttributeNames: {

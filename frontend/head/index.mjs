@@ -112,13 +112,17 @@ export default function Head(event, state) {
         .form-input-field {
           all: unset;
           box-shadow: inset 0px 1px 2px 0px black;
+          border-radius: 0.35rem 0.35rem 0.35rem 0.35rem;
         }
         .form-input-select {
+          all: none;
+          -webkit-appearance: none;
           background-color: transparent;
           border: none;
           font-family: inherit;
           font-size: inherit;
           box-shadow: inset 0px 1px 2px 0px black;
+          border-radius: 0.35rem 0.35rem 0.35rem 0.35rem;
         }
       </style>
     </head>

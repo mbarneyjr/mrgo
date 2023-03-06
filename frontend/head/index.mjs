@@ -15,6 +15,12 @@ export default function Head(event, state) {
   const devHtml = process.env.LOCAL === 'true'
     ? /* html */ `<script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>`
     : '';
+
+  const colorVariables = Object.keys(config.colors).map((component) => {
+    return Object.keys(config.colors[component]).map((augment) => {
+      return `--${component}-${augment}: ${config.colors[component][augment]}`;
+    }).join(';\n');
+  }).join(';\n');
   return /* html */`
     <!DOCTYPE html>
     <html lang="en">
@@ -27,6 +33,9 @@ export default function Head(event, state) {
       <link rel="icon" href="/static/favicon.ico">
       ${devHtml}
       <style>
+        :root {
+          ${colorVariables}
+        }
         body {
           margin: 0;
           font-family: 'Arial';

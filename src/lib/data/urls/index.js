@@ -185,7 +185,6 @@ exports.getUrl = async (urlId) => {
     target: result.Item.target,
     status: result.Item.status,
   };
-  if (url.status !== 'ACTIVE') throw new errors.NotFoundError('url not found', { id: urlId });
   return url;
 };
 

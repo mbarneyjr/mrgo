@@ -58,6 +58,11 @@ export function element({ html, state }) {
         <label class="${ELEMENT_NAME}-input-label" for="description">Description:</label>
         <input class="form-input-field ${ELEMENT_NAME}-input-field" type="text" id="description" name="description" value="${url.description}">
 
+        <label class="${ELEMENT_NAME}-input-label" for="status">Status:</label>
+        <select class="form-input-select ${ELEMENT_NAME}-input-field" name="status" id="status">
+          <option value="ACTIVE" ${url.status === 'ACTIVE' ? 'selected' : ''}>ACTIVE</option>
+          <option value="INACTIVE" ${url.status === 'INACTIVE' ? 'selected' : ''}>INACTIVE</option>
+        </select>
         <input class="reset app-btn app-btn-success ${ELEMENT_NAME}-submit-button" type="submit" value="Update URL">
       </form>
     </div>

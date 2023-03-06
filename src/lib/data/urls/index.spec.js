@@ -314,20 +314,6 @@ describe('src/lib/data/urls/index.js', async () => {
       });
       await expect(urlLib.getUrl('test-urlId')).to.be.eventually.rejectedWith(errors.NotFoundError);
     });
-
-    it('should throw a NotFoundError if status is not ACTIVE', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
-        Item: {
-          id: 'test-id',
-          name: 'test-name',
-          description: 'test-description',
-          target: 'https://mbarney.me',
-          status: 'INACTIVE',
-          userId: 'test-userId',
-        },
-      });
-      await expect(urlLib.getUrl('test-urlId')).to.be.eventually.rejectedWith(errors.NotFoundError);
-    });
   });
 
   describe('putUrl', async () => {

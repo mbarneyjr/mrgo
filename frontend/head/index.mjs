@@ -30,7 +30,7 @@ export default function Head(event, state) {
         body {
           margin: 0;
           font-family: 'Arial';
-          background-color: ${config.colors.background.normal};
+          background-color: ${config.colors.background.light};
         }
         .reset {
           all: unset;
@@ -81,7 +81,7 @@ export default function Head(event, state) {
         .app-card {
           border-radius: 0.35rem 0.35rem 0.35rem 0.35rem;
           box-shadow: 0px 1px 2px 0px black;
-          background-color: ${config.colors.background.heavy};
+          background-color: ${config.colors.background.normal};
           margin: 1rem;
         }
 
@@ -102,6 +102,13 @@ export default function Head(event, state) {
 
         .form-input-field {
           all: unset;
+          box-shadow: inset 0px 1px 2px 0px black;
+        }
+        .form-input-select {
+          background-color: transparent;
+          border: none;
+          font-family: inherit;
+          font-size: inherit;
           box-shadow: inset 0px 1px 2px 0px black;
         }
       </style>

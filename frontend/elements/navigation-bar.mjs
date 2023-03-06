@@ -25,14 +25,14 @@ export function element({ html, state }) {
         padding: 1rem;
         flex-basis: auto;
         background-color: ${config.colors.nav.normal};
-        color: ${config.colors.background.normal};
+        color: ${config.colors.background.light};
       }
       .${ELEMENT_NAME}-link:hover {
         background-color: ${config.colors.nav.heavy};
-        color: ${config.colors.background.normal};
+        color: ${config.colors.background.light};
       }
       .${ELEMENT_NAME}-active-nav {
-        background-color: ${config.colors.background.normal};
+        background-color: ${config.colors.background.light};
         color: ${config.colors.nav.normal};
       }
     </style>

@@ -11,12 +11,12 @@ export function element({ html, state }) {
   const forwardPaginationToken = state.store?.forwardPaginationToken ?? undefined;
   const backwardPaginationToken = state.store?.backwardPaginationToken ?? undefined;
 
-  const urlListElements = urlList.filter((url) => url.status === 'ACTIVE').map((url) => {
+  const urlListElements = urlList.map((url) => {
     const shortUrl = `${config.appEndpoint}/go/${url.id}`;
     const editUrl = `${config.appEndpoint}/urls/${url.id}`;
     const title = url.name ? `${url.name} (${url.target})` : url.target;
     return /* html */ `
-      <li class="${ELEMENT_NAME}-element app-card" id="${url.id}">
+      <li class="${ELEMENT_NAME}-element ${ELEMENT_NAME}-${url.status === 'ACTIVE' ? 'active' : 'inactive'} app-card" id="${url.id}">
         <div class="${ELEMENT_NAME}-element-content">
           <b>${title}</b>
           <a href="${shortUrl}">${shortUrl}</a>
@@ -89,6 +89,14 @@ export function element({ html, state }) {
       .${ELEMENT_NAME}-form {
         flex-grow: 1;
         display: flex;
+      }
+
+      .${ELEMENT_NAME}-active {
+        background-color: ${config.colors.background.normal};
+      }
+
+      .${ELEMENT_NAME}-inactive {
+        color: ${config.colors.nav.light};
       }
 
       .pagination {

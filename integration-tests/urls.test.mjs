@@ -156,14 +156,13 @@ describe(`URL management [${integrationTestId}]`, async () => {
     expect(createdUrl).to.equal(undefined, `unexpected url returned in GET /urls (${createdUrlId})`);
   });
 
-  it('can no longer get the URL durectly', async () => {
+  it('should return status of DELETED when getting the url directly', async () => {
     const response = await fetch(`${apigwBaseUrl}/urls/${createdUrlId}`);
-    expect(response.status).equals(404);
+    expect(response.status).equals(200);
     expect(response.headers.get('content-type')).equals('application/json');
     const body = await response.text();
     expect(() => JSON.parse(body)).to.not.throw(null, 'response was not well-formatted json');
     const parsedBody = JSON.parse(body);
-    expect(parsedBody).to.haveOwnProperty('error');
-    expect(parsedBody.error).to.haveOwnProperty('code', 'NOT_FOUND');
+    expect(parsedBody).to.haveOwnProperty('status', 'DELETED', 'url should be marked as DELETED but is not');
   });
 });

@@ -75,7 +75,7 @@ exports.listUrls = async (userId, limit, paginationToken) => {
   let responseItems = [];
   let hasMoreResults = true;
 
-  while (responseItems.length < limit && hasMoreResults) {
+  while (responseItems.length < limit + 1 && hasMoreResults) {
     const response = await exports.dbc().send(new QueryCommand(queryParams));
     if (response.Items) responseItems = responseItems.concat(response.Items);
     // if response.LastEvaluatedKey is present, we have more pagination to do

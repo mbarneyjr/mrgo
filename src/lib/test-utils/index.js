@@ -21,7 +21,8 @@ function evaluatePathParameters(path, pathParameters) {
  * @param {string} [options.body] body
  * @param {boolean} [options.isBase64Encoded] body
  * @param {Record<string, string>} [options.stageVariables] Headers
- * @returns {import('aws-lambda').APIGatewayProxyEventV2}
+ * @param {Record<string, string>} [options.claims] jwt claims
+ * @returns {import('aws-lambda').APIGatewayProxyEventV2WithJWTAuthorizer}
  */
 exports.getApiGatewayLambdaEvent = (options) => ({
   version: '2.0',
@@ -44,6 +45,16 @@ exports.getApiGatewayLambdaEvent = (options) => ({
       protocol: 'HTTP/1.1',
       sourceIp: '127.0.0.1',
       userAgent: 'Custom User Agent String',
+    },
+    authorizer: {
+      integrationLatency: 10,
+      principalId: 'principalId',
+      jwt: {
+        claims: options.claims ?? {
+          email: 'unit@test.com',
+        },
+        scopes: [],
+      },
     },
     requestId: 'requestId',
     routeKey: `${options.method} ${options.path}`,

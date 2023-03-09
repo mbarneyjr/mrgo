@@ -1,0 +1,71 @@
+<style>
+  .title {
+    text-align: center;
+    margin: 0;
+    padding: 1rem;
+  }
+  .subtitle {
+    text-align: center;
+  }
+  mrgo-robot {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .home-section {
+    background-image: linear-gradient(to right, var(--background-light), var(--background-light), var(--background-heavy), var(--background-light), var(--background-light));
+    max-width: 1028px;
+    margin: auto;
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .home-section p {
+    font-family: monospace;
+  }
+  .home-section-alternate {
+    background-image: linear-gradient(to right, var(--background-light), var(--background-light), var(--background-normal), var(--background-light), var(--background-light));
+  }
+
+  .home-image {
+    width: 100%;
+  }
+</style>
+<navigation-bar></navigation-bar>
+<main class="home-page-main">
+  <section>
+    <h1 class="title">Welcome to Mr. Go!</h1>
+    <p class="subtitle">Let's take you somewhere</p>
+    <mrgo-robot></mrgo-robot>
+  </section>
+  <section class="home-section home-section-alternate">
+    <img class="home-image" src="/static/create-url.png"></img>
+    <div class="home-images">
+      <div>
+        <h2>Create a short URL</h2>
+        <p>We'll give you a short url in return</p>
+      </div>
+    </div>
+  </section>
+  <section class="home-section">
+    <div>
+      <h2>Head our way!</h2>
+      <p>Mr. Go will take care of the rest for you :)</p>
+    </div>
+    <img class="home-image" src="/static/redirect.png"></img>
+  </section>
+  <section class="home-section home-section-alternate">
+    <img class="home-image" src="/static/inactive.png"></img>
+    <div>
+      <h2>Deactivate and reactivate URLs</h2>
+      <p>Mr. Go will take care of the rest for you :)</p>
+    </div>
+  </section>
+  <section class="home-section">
+    <div>
+      <h2>Short urls will never be re-used</h2>
+      <p>Even if a URL gets deleted. You can redirect your users safely</p>
+    </div>
+    <img class="home-image" src="/static/deactivated.png"></img>
+  </section>
+</main>

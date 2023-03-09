@@ -34,6 +34,14 @@ Resources:
         - AttributeName: userId
           AttributeType: S
 
+  SsmTableName:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: The name of the dynamodb table
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/data/table-name
+      Value: !Ref Urls
+
 
 Outputs:
   TableArn:
@@ -41,4 +49,4 @@ Outputs:
     Value: !GetAtt Urls.Arn
   TableName:
     Description: The name of the dynamodb table
-    Value: !Ref Urls
+    Value: !GetAtt SsmTableName.Value

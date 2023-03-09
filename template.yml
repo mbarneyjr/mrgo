@@ -42,6 +42,20 @@ Resources:
         HostedZoneName: !Ref HostedZoneName
         DomainName: !Ref DomainName
 
+  Frontend:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/frontend.yml
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        EnvironmentName: !Ref EnvironmentName
+        HostedZoneName: !Ref HostedZoneName
+        CertificateArn: !GetAtt Cert.Outputs.CertificateArn
+        DomainName: !Ref DomainName
+        ApiEndpoint: !GetAtt Api.Outputs.ApiEndpoint
+        AuthAppClientId: !GetAtt Auth.Outputs.AppClientId
+        AuthBaseUrl: !GetAtt Auth.Outputs.AuthBaseUrl
+
   Api:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -57,7 +71,17 @@ Resources:
         AuthUserPoolId: !GetAtt Auth.Outputs.UserPoolId
         AuthAppClientId: !GetAtt Auth.Outputs.AppClientId
 
+
 Outputs:
   ApiEndpoint:
     Value: !GetAtt Api.Outputs.ApiEndpoint
     Description: API Gateway endpoint URL for the API
+  AppEndpoint:
+    Value: !GetAtt Frontend.Outputs.AppEndpoint
+    Description: App endpoint URL for the frontend
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !GetAtt Auth.Outputs.UserPoolId
+  AppClientId:
+    Description: Cognito App Client ID
+    Value: !GetAtt Auth.Outputs.AppClientId

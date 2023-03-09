@@ -1,13 +1,30 @@
-import { APIGatewayProxyEventV2,  Context, APIGatewayProxyResultV2, APIGatewayProxyStructuredResultV2 } from 'aws-lambda'
+import { Context, APIGatewayProxyResultV2, APIGatewayProxyStructuredResultV2, APIGatewayProxyEventV2WithJWTAuthorizer } from 'aws-lambda'
 
-export interface WrappedEvent extends Omit<APIGatewayProxyEventV2, 'body'> {
+export interface ApiWrapperOptions {
+  authorizeJwt?: boolean
+}
+
+export interface ValidationError extends Record<string, string> {
+  message: string
+  dataPath: string
+}
+
+export interface ApiErrorResponseBody {
+  error: {
+    message: string
+    code: string
+    body?: Record<string, unknown>
+  }
+}
+
+export interface WrappedEvent extends Omit<APIGatewayProxyEventV2WithJWTAuthorizer, 'body'> {
   body?: string | number | boolean | object
 }
 
 export type UnrappedResponse = APIGatewayProxyResultV2 | string | number | boolean | object  | void
 
 export type UnwrappedHandler = (event: WrappedEvent, context: Context) => Promise<UnrappedResponse>
-export type LambdaHandler = (event: APIGatewayProxyEventV2, context: Context) => Promise<APIGatewayProxyStructuredResultV2>
+export type LambdaHandler = (event: APIGatewayProxyEventV2WithJWTAuthorizer, context: Context) => Promise<APIGatewayProxyStructuredResultV2>
 
 export function validateEvent(event: WrappedEvent): void
-export function apiWrapper(handlerFunction: UnwrappedHandler): LambdaHandler
+export function apiWrapper(handlerFunction: UnwrappedHandler, options?: ApiWrapperOptions): LambdaHandler

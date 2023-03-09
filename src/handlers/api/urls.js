@@ -1,36 +1,42 @@
 const { apiWrapper } = require('../../lib/api/wrapper');
 const urlsLib = require('../../lib/data/urls');
 
-/* eslint-disable no-unused-vars */
-exports.listHandler = apiWrapper(async (event, context) => {
-  const urls = await urlsLib.listUrls('global-user', event.queryStringParameters?.nextToken);
+exports.listHandler = apiWrapper(async (event) => {
+  const claims = event.requestContext.authorizer.jwt.claims;
+  const userId = claims.email;
+  const limit = event.queryStringParameters?.limit ? parseInt(event.queryStringParameters?.limit, 10) : 10;
+  const paginationToken = event.queryStringParameters?.paginationToken;
+  const urls = await urlsLib.listUrls(/** @type {string} */ (userId), limit, paginationToken);
   return {
     urls: urls.urls,
-    nextToken: urls.nextToken,
+    forwardPaginationToken: urls.forwardPaginationToken,
+    backwardPaginationToken: urls.backwardPaginationToken,
   };
-});
+}, { authorizeJwt: true });
 
-/* eslint-disable no-unused-vars */
-exports.createHandler = apiWrapper(async (event, context) => {
+exports.createHandler = apiWrapper(async (event) => {
+  const claims = event.requestContext.authorizer.jwt.claims;
+  const userId = claims.email;
   const urlCreateRequest = /** @type {import('../../lib/data/urls/index').UrlCreateRequest} */ (event.body);
-  const url = await urlsLib.createUrl(urlCreateRequest, 'global-user');
+  const url = await urlsLib.createUrl(urlCreateRequest, /** @type {string} */ (userId));
+  return url;
+}, { authorizeJwt: true });
+
+exports.getHandler = apiWrapper(async (event) => {
+  const url = await urlsLib.getUrl(/** @type {string} */ (event.pathParameters?.urlId));
   return url;
 });
 
-/* eslint-disable no-unused-vars */
-exports.getHandler = apiWrapper(async (event, context) => {
-  const url = await urlsLib.getUrl(/** @type {string} */ (event.pathParameters?.urlId), 'global-user');
-  return url;
-});
-
-/* eslint-disable no-unused-vars */
-exports.putHandler = apiWrapper(async (event, context) => {
+exports.putHandler = apiWrapper(async (event) => {
+  const claims = event.requestContext.authorizer.jwt.claims;
+  const userId = claims.email;
   const urlUpdateRequest = /** @type {import('../../lib/data/urls/index').UrlUpdateRequest} */ (event.body);
-  const url = await urlsLib.putUrl(urlUpdateRequest, /** @type {string} */ (event.pathParameters?.urlId), 'global-user');
+  const url = await urlsLib.putUrl(urlUpdateRequest, /** @type {string} */ (event.pathParameters?.urlId), /** @type {string} */ (userId));
   return url;
-});
+}, { authorizeJwt: true });
 
-/* eslint-disable no-unused-vars */
-exports.deleteHandler = apiWrapper(async (event, context) => {
-  await urlsLib.deleteUrl(/** @type {string} */ (event.pathParameters?.urlId), 'global-user');
-});
+exports.deleteHandler = apiWrapper(async (event) => {
+  const claims = event.requestContext.authorizer.jwt.claims;
+  const userId = claims.email;
+  await urlsLib.deleteUrl(/** @type {string} */ (event.pathParameters?.urlId), /** @type {string} */ (userId));
+}, { authorizeJwt: true });

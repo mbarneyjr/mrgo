@@ -22,7 +22,6 @@ describe('src/handlers/api/urls.js', async () => {
   describe('listHandler', async () => {
     it('should list urls', async () => {
       const expected = {
-        nextToken: 'unittest-token',
         /** @type {import('../../lib/data/urls/index').Url[]} */
         urls: [{
           description: 'unittest',
@@ -39,6 +38,26 @@ describe('src/handlers/api/urls.js', async () => {
       if (res.body === undefined) throw expect.fail('response body was undefined');
       expect(JSON.parse(res.body)).to.deep.equal(expected);
       sinon.assert.calledOnce(stub);
+    });
+
+    it('should list urls with limit querystring parameter', async () => {
+      const expected = {
+        /** @type {import('../../lib/data/urls/index').Url[]} */
+        urls: [{
+          description: 'unittest',
+          name: 'unittest',
+          id: 'unittest',
+          status: 'ACTIVE',
+          target: 'https://unittest',
+        }],
+      };
+      const stub = sandbox.stub(urlsLib, 'listUrls').resolves(expected);
+      const event = getApiGatewayLambdaEvent({ method: 'GET', path: '/urls', queryStringParameters: { limit: '50' } });
+      const res = await urlsHandlers.listHandler(event, getApiGatewayLambdaContext());
+      expect(res.statusCode).to.equal(200);
+      if (res.body === undefined) throw expect.fail('response body was undefined');
+      expect(JSON.parse(res.body)).to.deep.equal(expected);
+      sinon.assert.calledOnceWithExactly(stub, 'unit@test.com', 50, undefined);
     });
   });
 

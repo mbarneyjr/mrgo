@@ -1,16 +1,17 @@
 const fs = require('fs');
 const path = require('path');
+const apiSchemaBuilder = require('api-schema-builder');
+
 const errors = require('../errors');
+const { logger, errorJson } = require('../logger');
 
-// api-schema-builder has type issues, this will ignore them
-const apiSchemaBuilder = eval('require("api-schema-builder")'); // eslint-disable-line no-eval
-
-/** @type {Record<string, string>} */
+/** @type {Record<string, string | number | boolean>} */
 const commonHeaders = {
+  'Access-Control-Allow-Origin': '*',
 };
 
 /**
- * @param {import('aws-lambda').APIGatewayProxyEventV2} event
+ * @param {import('aws-lambda').APIGatewayProxyEventV2WithJWTAuthorizer} event
  * @returns {Promise<import('./wrapper').WrappedEvent>}
  */
 async function parseEvent(event) {
@@ -26,7 +27,7 @@ async function parseEvent(event) {
 /**
  * @param {Array | undefined} parameterErrors
  * @param {Array | undefined} bodyErrors
- * @returns {Array}
+ * @returns {Array<import('./wrapper.js').ValidationError>}
  */
 function formatOpenapiValidationErrors(parameterErrors, bodyErrors) {
   const formattedParameterErrors = parameterErrors?.map((parameterError) => {
@@ -38,7 +39,7 @@ function formatOpenapiValidationErrors(parameterErrors, bodyErrors) {
   });
 
   const formattedBodyErrors = bodyErrors?.map((bodyError) => {
-    const dataPath = `body${bodyError.dataPath}`;
+    const dataPath = bodyError.dataPath;
     return {
       message: bodyError.message,
       dataPath,
@@ -67,22 +68,31 @@ exports.validateEvent = (event) => {
   });
   const validBody = schemaEndpoint.body ? schemaEndpoint.body.validate(event.body) : true;
   if (!validParameters || !validBody) {
-    throw new errors.ValidationError('invalid request', formatOpenapiValidationErrors(schemaEndpoint?.parameters?.errors, schemaEndpoint?.body?.errors));
+    const validationErrors = formatOpenapiValidationErrors(schemaEndpoint?.parameters?.errors, schemaEndpoint?.body?.errors);
+    const validationErrorMessage = validationErrors.map((validationError) => `${validationError.dataPath}: ${validationError.message}`).join('\n');
+    throw new errors.ValidationError(validationErrorMessage, validationErrors);
   }
 };
 
 /** @type {import('./wrapper').apiWrapper} */
-exports.apiWrapper = (handlerFunction) => {
+exports.apiWrapper = (handlerFunction, options) => {
   return async (event, context) => {
     /* eslint-disable-next-line no-console */
-    console.log(`Event: ${JSON.stringify(event)}`);
-
+    logger.info('event', { event });
     try {
       const parsedEvent = await parseEvent(event);
+      if (options?.authorizeJwt === true) {
+        const claims = event.requestContext?.authorizer?.jwt?.claims;
+        const userId = claims.email;
+        if (typeof userId !== 'string') {
+          logger.error('Invalid email claim, it should be a string but is not, claims:', { claims });
+          throw new errors.UnauthorizedError('Unauthorized');
+        }
+      }
+
       /** @type {import('./wrapper').validateEvent<object>} */
       exports.validateEvent(parsedEvent);
 
-      /** @type {import('aws-lambda').APIGatewayProxyResultV2} */
       const lambdaResult = {
         statusCode: 200,
         headers: commonHeaders,
@@ -93,7 +103,7 @@ exports.apiWrapper = (handlerFunction) => {
       } else if (result === undefined) {
         lambdaResult.body = 'OK';
       } else if (result instanceof Object && 'statusCode' in result) {
-        lambdaResult.statusCode = result.statusCode;
+        lambdaResult.statusCode = result.statusCode ?? 200;
         lambdaResult.headers = {
           ...commonHeaders,
           ...result.headers,
@@ -103,25 +113,31 @@ exports.apiWrapper = (handlerFunction) => {
         lambdaResult.isBase64Encoded = result.isBase64Encoded;
       } else {
         lambdaResult.body = JSON.stringify(result);
+        lambdaResult.headers['content-type'] = 'application/json';
       }
       return lambdaResult;
     } catch (err) {
       /* eslint-disable-next-line no-console */
-      console.error(JSON.stringify(err, Object.getOwnPropertyNames(err)));
+      const errorLog = logger.error('error', { error: errorJson(err) });
       if (err instanceof errors.BaseError) {
+        /** @type {import('./wrapper.js').ApiErrorResponseBody} */
+        const errorResponseBody = {
+          error: {
+            message: err.message,
+            code: err.code,
+            body: err.body,
+          },
+        };
         return {
           statusCode: err.statusCode,
           headers: {
             ...commonHeaders,
           },
-          body: JSON.stringify({
-            message: err.message,
-            code: err.code,
-            error: err.body,
-          }),
+          body: JSON.stringify(errorResponseBody),
         };
       }
-      throw err;
+      const newError = new Error(JSON.stringify(errorLog), { cause: err });
+      throw newError;
     }
   };
 };

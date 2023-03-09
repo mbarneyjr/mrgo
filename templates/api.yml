@@ -179,7 +179,7 @@ Resources:
     Properties:
       ApiId: !Ref Api
       DomainName: !Ref ApiGatewayDomainName
-      Stage: !Ref ApiStage
+      Stage: !Ref ApiApiGatewayDefaultStage
 
   ApiDnsRecord:
     Type: AWS::Route53::RecordSet
@@ -194,13 +194,12 @@ Resources:
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${ApplicationName}-${EnvironmentName}
-      RetentionInDays: 7
+      LogGroupName: !Sub /aws/apigateway/${ApplicationName}-${EnvironmentName}-api
 
   Api:
     Type: AWS::Serverless::HttpApi
     Properties:
-      StageName: !Ref EnvironmentName
+      StageName: $default
       AccessLogSettings:
         DestinationArn: !GetAtt ApiLogGroup.Arn
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "errorResponseType":"$context.error.responseType", "message":"$context.error.message", "integrationErrorMessage":"$context.integrationErrorMessage", "authorizerError":"$context.authorizer.error" }'
@@ -246,9 +245,13 @@ Resources:
                 uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListUrls.Arn}/invocations
               parameters:
                 - in: query
-                  name: nextToken
-                  description: A token used to query the next page of results
+                  name: paginationToken
+                  description: A token used to query for the next page of results
                   schema: { type: string }
+                - in: query
+                  name: limit
+                  description: Limit the number of urls returned
+                  schema: { type: number }
               responses:
                 '200': { $ref: '#/components/responses/listUrlsResponse' }
             post:
@@ -264,13 +267,7 @@ Resources:
                 payloadFormatVersion: '2.0'
                 type: aws_proxy
                 uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateUrl.Arn}/invocations
-              requestBody:
-                description: POST /urls request
-                required: true
-                content:
-                  application/json:
-                    schema:
-                      $ref: '#/components/schemas/url'
+              requestBody: { $ref: '#/components/requestBodies/createUrlRequest' }
               responses:
                 '200': { $ref: '#/components/responses/createUrlResponse' }
           /urls/{urlId}:
@@ -312,13 +309,7 @@ Resources:
                   description: The name of the URL
                   schema: { type: string }
                   required: true
-              requestBody:
-                description: PUT /urls/{urlId} request
-                required: true
-                content:
-                  application/json:
-                    schema:
-                      $ref: '#/components/schemas/url'
+              requestBody: { $ref: '#/components/requestBodies/updateUrlRequest' }
               responses:
                 '200': { $ref: '#/components/responses/updateUrlResponse' }
             delete:
@@ -343,7 +334,32 @@ Resources:
               responses:
                 '200': { $ref: '#/components/responses/deleteUrlResponse' }
         components:
-          requestBodies: {}
+          requestBodies:
+            createUrlRequest:
+              description: Create url request
+              required: true
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      name: { $ref: '#/components/schemas/url-name' }
+                      description: { $ref: '#/components/schemas/url-description' }
+                      target: { $ref: '#/components/schemas/url-target' }
+                      status: { $ref: '#/components/schemas/url-status' }
+            updateUrlRequest:
+              description: Update url request
+              required: true
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      name: { $ref: '#/components/schemas/url-name' }
+                      description: { $ref: '#/components/schemas/url-description' }
+                      status: { $ref: '#/components/schemas/url-status' }
           responses:
             getDocumentationResponse:
               description: GET /docs response
@@ -380,8 +396,7 @@ Resources:
               content:
                 application/json:
                   schema:
-                    allOf:
-                      - $ref: '#/components/schemas/url'
+                    $ref: '#/components/schemas/url'
             deleteUrlResponse:
               description: DELETE /urls/{urlId} response
           schemas:
@@ -394,10 +409,13 @@ Resources:
               additionalProperties: false
               required:
                 - urls
+                - directions
               properties:
                 urls:
                   $ref: '#/components/schemas/urlList'
-                nextToken:
+                forwardPaginationToken:
+                  type: string
+                backwardPaginationToken:
                   type: string
             urlList:
               type: array
@@ -407,27 +425,30 @@ Resources:
               type: object
               additionalProperties: false
               properties:
-                id:
-                  type: string
-                  description: the ID of the URL (slug that's used to redirect)
-                  readOnly: true
-                name:
-                  type: string
-                  description: the user-defined name of the URL
-                description:
-                  type: string
-                  description: the user-defined description of the URL
-                target:
-                  type: string
-                  description: the target https URL to redirect to
-                  format: uri
-                status:
-                  type: string
-                  enum:
-                    - ACTIVE
-                    - INACTIVE
-                    - DELETED
-                  description: the status of the URL
+                id: { $ref: '#/components/schemas/url-id' }
+                name: { $ref: '#/components/schemas/url-name' }
+                description: { $ref: '#/components/schemas/url-description' }
+                target: { $ref: '#/components/schemas/url-target' }
+                status: { $ref: '#/components/schemas/url-status' }
+            url-id:
+              type: string
+              description: the ID of the URL (slug that's used to redirect)
+              readOnly: true
+            url-name:
+              type: string
+              description: the user-defined name of the URL
+            url-description:
+              type: string
+              description: the user-defined description of the URL
+            url-target:
+              type: string
+              description: the target https URL to redirect to
+            url-status:
+              type: string
+              enum:
+                - ACTIVE
+                - INACTIVE
+              description: the status of the URL
           securitySchemes:
             CognitoAuth:
               in: header
@@ -443,8 +464,16 @@ Resources:
                   audience:
                     - !Ref AuthAppClientId
 
+  SsmApiEndpoint:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Description: API Gateway endpoint URL for the API
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/api/api-endpoint
+      Value: !Sub https://api.${DomainName}
+
 
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL for the API
-    Value: !Sub https://api.${DomainName}/
+    Value: !GetAtt SsmApiEndpoint.Value

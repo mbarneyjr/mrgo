@@ -33,6 +33,19 @@ describe('src/lib/api/wrapper.js', async () => {
       expect(JSON.parse(result.body)).to.deep.equal({ message: 'success' });
     });
 
+    it('should support returning node primitives', async () => {
+      const unwrapped = sandbox.stub().resolves('some string');
+      const wrapped = apiWrapper(unwrapped);
+      const event = getApiGatewayLambdaEvent({
+        method: 'GET',
+        path: '/urls',
+      });
+      const result = await wrapped(event, getApiGatewayLambdaContext());
+      expect(result.statusCode).to.equal(200, result.body);
+      if (!result.body) throw expect.fail('result body was undefined');
+      expect(result.body).to.equal('some string');
+    });
+
     it('should support returning entire http result', async () => {
       const unwrapped = sandbox.stub().resolves({ statusCode: 204, body: JSON.stringify({ message: 'success' }) });
       const wrapped = apiWrapper(unwrapped);
@@ -46,6 +59,40 @@ describe('src/lib/api/wrapper.js', async () => {
       expect(JSON.parse(result.body)).to.deep.equal({ message: 'success' });
     });
 
+    it('should support returning entire http with undefined statusCode', async () => {
+      const unwrapped = sandbox.stub().resolves({ statusCode: undefined, body: JSON.stringify({ message: 'success' }) });
+      const wrapped = apiWrapper(unwrapped);
+      const event = getApiGatewayLambdaEvent({
+        method: 'GET',
+        path: '/urls',
+      });
+      const result = await wrapped(event, getApiGatewayLambdaContext());
+      expect(result.statusCode).to.equal(200);
+      if (!result.body) throw expect.fail('result body was undefined');
+      expect(JSON.parse(result.body)).to.deep.equal({ message: 'success' });
+    });
+
+    it('should handle options.authorizeJwt', async () => {
+      const unwrapped = sandbox.stub().resolves({ message: 'success' });
+      const wrapped = apiWrapper(unwrapped, { authorizeJwt: true });
+      const event = getApiGatewayLambdaEvent({
+        method: 'GET',
+        path: '/urls',
+        claims: {
+          // email: undefined,
+        },
+      });
+      const result = await wrapped(event, getApiGatewayLambdaContext());
+      expect(result.statusCode).to.equal(403);
+      if (!result.body) throw expect.fail('result body was undefined');
+      expect(JSON.parse(result.body)).to.deep.equal({
+        error: {
+          message: 'Unauthorized',
+          code: 'UNAUTHORIZED',
+        },
+      });
+    });
+
     it('should handle custom error', async () => {
       const unwrapped = sandbox.stub().rejects(new BaseError('something bad happened', 'BAD_THING', 400));
       const wrapped = apiWrapper(unwrapped);
@@ -57,8 +104,10 @@ describe('src/lib/api/wrapper.js', async () => {
       expect(result.statusCode).to.equal(400);
       if (!result.body) throw expect.fail('result body was undefined');
       expect(JSON.parse(result.body)).to.deep.equal({
-        message: 'something bad happened',
-        code: 'BAD_THING',
+        error: {
+          message: 'something bad happened',
+          code: 'BAD_THING',
+        },
       });
     });
 
@@ -95,14 +144,13 @@ describe('src/lib/api/wrapper.js', async () => {
         method: 'POST',
         path: '/urls',
         body: JSON.stringify({
-          target: 'not-a-valid-url',
+          target: 'foo.com',
           extraProperty: 'foo',
           status: 'INVALID_STATUS',
         }),
       });
       const result = await wrapped(event, getApiGatewayLambdaContext());
       expect(result.statusCode).to.equal(400);
-      expect(result.body).to.include('should match format \\"uri\\"');
       expect(result.body).to.include('should NOT have additional properties');
       expect(result.body).to.include('should be equal to one of the allowed values');
     });

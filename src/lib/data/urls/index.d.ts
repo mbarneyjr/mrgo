@@ -49,11 +49,20 @@ export interface UrlUpdateRequest {
   status?: Url['status'] | null
 }
 
+export type Direction = 'forward' | 'backward';
+
+export interface UrlListResponse {
+  /** a list of urls */
+  urls: Array<Url>
+  forwardPaginationToken?: string
+  backwardPaginationToken?: string
+}
+
 export const uuid: ShortUniqueId
 
 export function dbc(): DynamoDBDocumentClient
-export function listUrls(userId: string, nextToken?: string): Promise<{ urls: Array<Url>, nextToken?: string }>
+export function listUrls(userId: string, limit: number, paginationToken?: string): Promise<UrlListResponse>
 export function createUrl(item: UrlCreateRequest, userId: string): Promise<UrlCreateResponse>
-export function getUrl(urlId: string, userId: string): Promise<Url>
+export function getUrl(urlId: string): Promise<Url>
 export function putUrl(urlUpdateRequest: UrlUpdateRequest, urlId: string, userId: string): Promise<Url>
 export function deleteUrl(urlId: string, userId: string): Promise<void>

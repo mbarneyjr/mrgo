@@ -44,6 +44,7 @@ Globals:
         APP_ENDPOINT: !Sub https://${DomainName}
         APP_CLIENT_ID: !Ref AuthAppClientId
         AUTH_BASE_URL: !Ref AuthBaseUrl
+        SESSION_KEY: !Sub '{{resolve:secretsmanager:${SessionKey}}}'
 
 
 Resources:
@@ -60,6 +61,15 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+
+  SessionKey:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/session-key
+      GenerateSecretString:
+        ExcludePunctuation: true
+        IncludeSpace: false
+        PasswordLength: 32
 
   FrontendProxy:
     Type: AWS::Serverless::Function

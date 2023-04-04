@@ -16,8 +16,8 @@ class BaseError extends Error {
     this.code = code;
     /** @type {number} */
     this.statusCode = statusCode;
-    /** @type {Record<string, unknown>} */
-    this.body = body ?? {};
+    /** @type {Record<string, unknown> | undefined } */
+    this.body = body;
   }
 }
 

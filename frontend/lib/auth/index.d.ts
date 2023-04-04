@@ -1,4 +1,4 @@
-import { APIGatewayProxyEventV2 } from 'aws-lambda';
+import { APIGatewayProxyEventV2 } from '@types/aws-lambda';
 
 export interface TokenCodeResponse {
   access_token: string;
@@ -6,10 +6,10 @@ export interface TokenCodeResponse {
   token_type: string;
   expires_in: number;
   refresh_token: string;
-  error?: any
+  error?: string
 }
 
 export type RefreshedTokenCodeResponse = Omit<TokenCodeResponse, 'refresh_token'>;
 
-export function getTokens(event: APIGatewayProxyEventV2, authCode: string): Promise<TokenCodeResponse>;
-export function refreshTokens(refreshToken: string): Promise<RefreshedTokenCodeResponse>;
+export async function getTokens(event: APIGatewayProxyEventV2, authCode: string): Promise<TokenCodeResponse>;
+export async function refreshTokens(refreshToken: string): Promise<RefreshedTokenCodeResponse>;

@@ -58,7 +58,7 @@ dependencies: node_modules src/node_modules frontend/node_modules integration-te
 
 lint: dependencies
 	./node_modules/.bin/tsc -p ./tsconfig.json
-	./node_modules/.bin/eslint . --max-warnings=0 --ext .mjs,.js
+	./node_modules/.bin/eslint . --max-warnings=0 --ext .mjs,.js,.ts
 	cfn-lint
 
 build: artifacts/dist.zip artifacts/frontend.zip

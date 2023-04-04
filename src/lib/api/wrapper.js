@@ -16,19 +16,16 @@ const commonHeaders = {
  */
 async function parseEvent(event) {
   const parsedEvent = structuredClone(event);
-  const bodyString = parsedEvent.isBase64Encoded && typeof parsedEvent.body === 'string' ? Buffer.from(parsedEvent.body, 'base64').toString() : parsedEvent.body;
-  const parsedBody = await Promise.resolve(bodyString).then(JSON.parse).catch(() => bodyString);
-  return {
-    ...parsedEvent,
-    body: parsedBody,
-  };
+  if (parsedEvent.body !== undefined) {
+    const bodyString = parsedEvent.isBase64Encoded && typeof parsedEvent.body === 'string'
+      ? Buffer.from(parsedEvent.body, 'base64').toString()
+      : parsedEvent.body;
+    parsedEvent.body = await Promise.resolve(bodyString).then(JSON.parse).catch(() => bodyString);
+  }
+  return parsedEvent;
 }
 
-/**
- * @param {Array | undefined} parameterErrors
- * @param {Array | undefined} bodyErrors
- * @returns {Array<import('./wrapper.js').ValidationError>}
- */
+/** @type {import('./wrapper').formatOpenapiValidationErrors} */
 function formatOpenapiValidationErrors(parameterErrors, bodyErrors) {
   const formattedParameterErrors = parameterErrors?.map((parameterError) => {
     return {
@@ -55,7 +52,7 @@ function formatOpenapiValidationErrors(parameterErrors, bodyErrors) {
 
 /** @type {import('./wrapper').validateEvent} */
 exports.validateEvent = (event) => {
-  const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '../../openapi.packaged.json')).toString());
+  const spec = /** @type {import('api-schema-builder').OpenapiSpec} */ (JSON.parse(fs.readFileSync(path.join(__dirname, '../../openapi.packaged.json')).toString()));
   const schema = apiSchemaBuilder.buildSchemaSync(spec);
   const [requestedMethod, requestedPath] = event.routeKey.split(' ');
   // convert /thing/{thingId} to /thing/:thingId which is what the validator will use
@@ -93,6 +90,7 @@ exports.apiWrapper = (handlerFunction, options) => {
       /** @type {import('./wrapper').validateEvent<object>} */
       exports.validateEvent(parsedEvent);
 
+      /** @type {import('./wrapper').ApiResponse} */
       const lambdaResult = {
         statusCode: 200,
         headers: commonHeaders,

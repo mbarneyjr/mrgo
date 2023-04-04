@@ -1,4 +1,3 @@
-import { MiddleWare } from '../index';
 import { Session } from '../../session';
 import { RenderFunction, RenderResult } from '../../router/index';
 
@@ -8,7 +7,7 @@ export interface LoggedInSession extends Session {
   idToken: string
 }
 
-export type AuthenticatedRenderFunction  = RenderFunction extends (event: infer E, session: infer S) => infer R ? (event: E, session: LoggedInSession) => R: never;
+export type AuthenticatedRenderFunction = RenderFunction extends (event: ApiGatewayProxyEventV2, session: Session) => RenderResult ? (event: ApiGatewayProxyEventV2, session: LoggedInSession) => RenderResult : never;
 
 export function isLoggedIn(session: Session): session is LoggedInSession;
 export function sessionNeedsRefresh(session: LoggedInSession): boolean;

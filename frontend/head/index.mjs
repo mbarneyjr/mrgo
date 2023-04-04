@@ -1,23 +1,26 @@
 import { config } from '../lib/config/index.mjs';
 
 /**
- * @param {import('aws-lambda').APIGatewayProxyEventV2} event
+ * @param {import('aws-lambda').APIGatewayProxyEventV2} _
  * @param {*} state
  * @returns string
  */
 
 /* eslint-disable-next-line no-unused-vars */
-export default function Head(event, state) {
+export default function Head(_, state) {
   const title = state?.head?.title
     ? `${state.head.title} - Mr. Go`
     : 'Mr. Go';
   const description = state?.head?.description ?? '';
   const devHtml = process.env.LOCAL === 'true'
-    ? /* html */ `<script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>`
+    ? /* html */ `
+      <script>
+        document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
+      </script>`
     : '';
 
-  const colorVariables = Object.keys(config.colors).map((component) => {
-    return Object.keys(config.colors[component]).map((augment) => {
+  const colorVariables = /** @type {import('../lib/config/index.js').ColorComponent[]} */ (Object.keys(config.colors)).map((component) => {
+    return /** @type {import('../lib/config/index.js').ColorAugment[]} */ (Object.keys(config.colors[component])).map((augment) => {
       return `--${component}-${augment}: ${config.colors[component][augment]}`;
     }).join(';\n');
   }).join(';\n');

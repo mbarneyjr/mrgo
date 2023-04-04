@@ -9,6 +9,7 @@ export const config = {
   },
   apiEndpoint: `${process.env.API_ENDPOINT}`,
   appEndpoint: `${process.env.APP_ENDPOINT}`,
+  /** @type {import('./index.js').ColorConfig} */
   colors: {
     nav: {
       light: '#808080',

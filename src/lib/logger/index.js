@@ -1,21 +1,28 @@
-/** @type {import('./index.js').log} */
-function log(level, message, data) {
-  const globalLogLevel = process.env.LOG_LEVEL || 'debug';
-
+/**
+ * @param {string | undefined} input
+ * @returns {number}
+ */
+function getLogLevel(input) {
+  /** @type {Record<import('./index.js').LogLevel, number>} */
   const logLevelMap = {
     debug: 10,
     info: 20,
     warn: 30,
     error: 40,
   };
+  if (input !== undefined && input in logLevelMap) return logLevelMap[/** @type {import('./index').LogLevel} */ (input)];
+  return logLevelMap.debug;
+}
 
+/** @type {import('./index.js').log} */
+function log(level, message, data) {
   /** @type {import('./index.js').Log} */
   const logLine = {
     message,
     data,
   };
 
-  if (logLevelMap[globalLogLevel] <= logLevelMap[level]) {
+  if (getLogLevel(process.env.LOG_LEVEL) <= getLogLevel(level)) {
     /* eslint-disable-next-line no-console */
     if (process.env.NODE_ENV !== 'test') console[level](JSON.stringify(logLine));
   }

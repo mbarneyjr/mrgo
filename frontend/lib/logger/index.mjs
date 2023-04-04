@@ -1,3 +1,19 @@
+/**
+ * @param {string | undefined} input
+ * @returns {number}
+ */
+function getLogLevel(input) {
+  /** @type {Record<import('./index.js').LogLevel, number>} */
+  const logLevelMap = {
+    debug: 10,
+    info: 20,
+    warn: 30,
+    error: 40,
+  };
+  if (input !== undefined && input in logLevelMap) return logLevelMap[/** @type {import('./index.js').LogLevel} */ (input)];
+  return logLevelMap.debug;
+}
+
 /** @type {import('./index.js').RequestContext} */
 const globalRequestContext = {
   method: null,
@@ -8,13 +24,6 @@ const globalRequestContext = {
 export function log(level, message, data, requestContext) {
   if (requestContext?.method) globalRequestContext.method = requestContext.method;
   if (requestContext?.path) globalRequestContext.path = requestContext.path;
-  const globalLogLevel = process.env.LOG_LEVEL || 'debug';
-  const logLevelMap = {
-    debug: 10,
-    info: 20,
-    warn: 30,
-    error: 40,
-  };
 
   /** @type {import('./index.js').Log} */
   const logLine = {
@@ -23,7 +32,7 @@ export function log(level, message, data, requestContext) {
     request: globalRequestContext,
   };
 
-  if (logLevelMap[globalLogLevel] < logLevelMap[level]) {
+  if (getLogLevel(process.env.LOG_LEVEL) <= getLogLevel(level)) {
     /* eslint-disable-next-line no-console */
     if (process.env.NODE_ENV !== 'test') console[level](JSON.stringify(logLine));
   }

@@ -1,4 +1,4 @@
-import { APIGatewayProxyEventV2 } from 'aws-lambda'
+import { APIGatewayProxyEventV2 } from '@types/aws-lambda';
 import { Session } from '../session';
 
 export interface RenderResult {
@@ -11,3 +11,11 @@ export interface RenderResult {
 }
 
 export type RenderFunction = (event: APIGatewayProxyEventV2, session: Session) => Promise<RenderResult>
+
+export interface Route {
+  params: Record<string, string>
+  handler: RenderFunction
+}
+
+export function addRoute(method: string, path: string, handler: RenderFunction): void
+export function getRoute(method: string, path: string): Route | null

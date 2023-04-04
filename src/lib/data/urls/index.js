@@ -34,10 +34,11 @@ exports.dbc = function dbc() {
   return documentClient;
 };
 
+/** @type {import('./index').makeKey} */
 function makeKey(record) {
   return {
-    id: record?.id,
-    userId: record?.userId,
+    id: record.id,
+    userId: record.userId,
   };
 }
 
@@ -71,12 +72,15 @@ exports.listUrls = async (userId, limit, paginationToken) => {
     ScanIndexForward: requestedDirection === 'forward',
   };
 
+  /** @type {import('./index').UrlTableRecord[]} */
   let responseItems = [];
   let hasMoreResults = true;
 
   while (responseItems.length < limit + 1 && hasMoreResults) {
     const response = await exports.dbc().send(new QueryCommand(queryParams));
-    if (response.Items) responseItems = responseItems.concat(response.Items);
+    if (response.Items) {
+      responseItems = responseItems.concat(/** @type {import('./index').UrlTableRecord[]} */ (response.Items));
+    }
     // if response.LastEvaluatedKey is present, we have more pagination to do
     hasMoreResults = response.LastEvaluatedKey !== undefined;
     queryParams.ExclusiveStartKey = response.LastEvaluatedKey;
@@ -189,9 +193,11 @@ exports.getUrl = async (urlId) => {
 
 /** @type {import('./index').putUrl} */
 exports.putUrl = async (urlUpdateRequest, urlId, userId) => {
+  /** @type {Record<`#${string}`, string>} */
   const expressionAttributeNames = {
     '#userId': 'userId',
   };
+  /** @type {Record<`:${string}`, string>} */
   const expressionAttributeValues = {
     ':userId': userId,
   };
@@ -199,39 +205,39 @@ exports.putUrl = async (urlUpdateRequest, urlId, userId) => {
   const removeUpdateExpressions = [];
 
   if (urlUpdateRequest.name !== undefined) {
-    expressionAttributeValues[':name'] = urlUpdateRequest.name;
     if (urlUpdateRequest.name === null) {
       removeUpdateExpressions.push(':name');
     } else {
       setUpdateExpressions.push('#name=:name');
       expressionAttributeNames['#name'] = 'name';
+      expressionAttributeValues[':name'] = urlUpdateRequest.name;
     }
   }
   if (urlUpdateRequest.description !== undefined) {
-    expressionAttributeValues[':description'] = urlUpdateRequest.description;
     if (urlUpdateRequest.description === null) {
       removeUpdateExpressions.push(':description');
     } else {
       setUpdateExpressions.push('#description=:description');
       expressionAttributeNames['#description'] = 'description';
+      expressionAttributeValues[':description'] = urlUpdateRequest.description;
     }
   }
   if (urlUpdateRequest.target !== undefined) {
-    expressionAttributeValues[':target'] = urlUpdateRequest.target;
     if (urlUpdateRequest.target === null) {
       removeUpdateExpressions.push(':target');
     } else {
       setUpdateExpressions.push('#target=:target');
       expressionAttributeNames['#target'] = 'target';
+      expressionAttributeValues[':target'] = urlUpdateRequest.target;
     }
   }
   if (urlUpdateRequest.status !== undefined) {
-    expressionAttributeValues[':status'] = urlUpdateRequest.status;
     if (urlUpdateRequest.status === null) {
       removeUpdateExpressions.push(':status');
     } else {
       setUpdateExpressions.push('#status=:status');
       expressionAttributeNames['#status'] = 'status';
+      expressionAttributeValues[':status'] = urlUpdateRequest.status;
     }
   }
 

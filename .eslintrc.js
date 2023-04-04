@@ -1,5 +1,9 @@
 module.exports = {
   root: true,
+  parser: '@typescript-eslint/parser',
+  plugins: [
+    '@typescript-eslint',
+  ],
   env: {
     browser: true,
     commonjs: true,
@@ -8,14 +12,21 @@ module.exports = {
   },
   extends: [
     'airbnb-base',
+    'plugin:import/errors',
+    'plugin:import/warnings',
+    'plugin:import/typescript',
+    'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:@typescript-eslint/recommended',
   ],
   parserOptions: {
     ecmaVersion: 'latest',
-    project: './jsconfig.json',
+    project: './tsconfig.json',
+    EXPERIMENTAL_useSourceOfProjectReferenceRedirect: true,
   },
   rules: {
     'max-len': ['error', 512],
     'yoda': 'off',
+    'consistent-return': 'off',
     'prefer-destructuring': 'off',
     'comma-dangle': ['error', 'always-multiline'],
     'semi': ['error', 'always'],
@@ -35,7 +46,21 @@ module.exports = {
       devDependencies: true,
       packageDir: [__dirname, `${__dirname}/src`, `${__dirname}/frontend`, `${__dirname}/integration-tests`],
     }],
+    'import/no-relative-packages': 'off', // off until better monorepo setup in place
+    '@typescript-eslint/no-empty-interface': 'off',
+    '@typescript-eslint/no-var-requires': 'off',
   },
+  settings: {
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.mjs', '.ts', '.d.ts'],
+        moduleDirectory: ['node_modules', 'src', 'frontend', 'integration-tests'],
+      },
+    },
+  },
+  ignorePatterns: [
+    'coverage',
+  ],
   overrides: [{
     files: [
       'frontend/*.*js',

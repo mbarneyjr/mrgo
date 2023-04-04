@@ -13,6 +13,9 @@ export function isLoggedIn(session) {
 /** @type {import('./index.js').sessionNeedsRefresh} */
 export function sessionNeedsRefresh(session) {
   const parsed = jwt.parse(session.idToken);
+  if (!parsed.payload) {
+    return true;
+  }
   const secondsUntilExpiration = parsed.payload.exp - (new Date().getTime() / 1000);
   const FIVE_MINUTES = 60 * 5;
   if (secondsUntilExpiration < FIVE_MINUTES) {
@@ -46,6 +49,7 @@ function redirectToLogin(session, requestedPath) {
 
 /** @type {import('./index.js').AuthMiddleWare} */
 export default function authMiddleware(originalRenderer) {
+  /** @type {import('../../router/index.js').RenderFunction} */
   return async (event, session) => {
     const newSession = structuredClone(session);
     if (!isLoggedIn(newSession)) {

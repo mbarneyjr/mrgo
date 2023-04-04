@@ -14,8 +14,11 @@ const integrationTestId = randomUUID();
 describe(`URL management errors [${integrationTestId}]`, async () => {
   let token = '';
   const apigwBaseUrl = process.env.API_ENDPOINT;
+  if (!apigwBaseUrl) throw new Error('API_ENDPOINT environment variable not set');
   const userPoolId = process.env.USER_POOL_ID;
+  if (!userPoolId) throw new Error('USER_POOL_ID environment variable not set');
   const appClientId = process.env.APP_CLIENT_ID;
+  if (!appClientId) throw new Error('APP_CLIENT_ID environment variable not set');
   const username = `user+${integrationTestId}@mrgo.io`;
   const password = `Ab1!${randomUUID()}`;
 
@@ -46,7 +49,7 @@ describe(`URL management errors [${integrationTestId}]`, async () => {
     });
     expect(response.status).equals(400);
     const body = await response.text();
-    expect(() => JSON.parse(body)).to.not.throw(null, 'response was not well-formatted json');
+    expect(() => JSON.parse(body)).to.not.throw(undefined, 'response was not well-formatted json');
     const parsedBody = JSON.parse(body);
     expect(parsedBody).to.haveOwnProperty('error');
     expect(parsedBody.error).to.haveOwnProperty('code', 'INVALID_REQUEST', 'unexpected error code');
@@ -67,7 +70,7 @@ describe(`URL management errors [${integrationTestId}]`, async () => {
     });
     expect(createResponse.status).equals(200);
     const createBody = await createResponse.text();
-    expect(() => JSON.parse(createBody)).to.not.throw(null, 'response was not well-formatted json');
+    expect(() => JSON.parse(createBody)).to.not.throw(undefined, 'response was not well-formatted json');
     const createdUrl = JSON.parse(createBody);
     expect(createdUrl).to.haveOwnProperty('id');
     // update the url
@@ -82,7 +85,7 @@ describe(`URL management errors [${integrationTestId}]`, async () => {
     });
     expect(updateResponse.status).equals(400);
     const errorBody = await updateResponse.text();
-    expect(() => JSON.parse(errorBody)).to.not.throw(null, 'response was not well-formatted json');
+    expect(() => JSON.parse(errorBody)).to.not.throw(undefined, 'response was not well-formatted json');
     const parsedErrorBody = JSON.parse(errorBody);
     expect(parsedErrorBody).to.haveOwnProperty('error');
     expect(parsedErrorBody.error).to.haveOwnProperty('code', 'INVALID_REQUEST', 'unexpected error code');
@@ -90,7 +93,7 @@ describe(`URL management errors [${integrationTestId}]`, async () => {
     const getResponse = await fetch(`${apigwBaseUrl}/urls/${createdUrl.id}`);
     expect(getResponse.status).equals(200);
     const getBody = await getResponse.text();
-    expect(() => JSON.parse(getBody)).to.not.throw(null, 'response was not well-formatted json');
+    expect(() => JSON.parse(getBody)).to.not.throw(undefined, 'response was not well-formatted json');
     const getUrl = JSON.parse(getBody);
     expect(getUrl).to.haveOwnProperty('target', 'https://google.com', 'url target was modified, is not the original target');
   });
@@ -99,7 +102,7 @@ describe(`URL management errors [${integrationTestId}]`, async () => {
     const response = await fetch(`${apigwBaseUrl}/urls/${randomUUID()}`);
     expect(response.status).equals(404);
     const errorBody = await response.text();
-    expect(() => JSON.parse(errorBody)).to.not.throw(null, 'response was not well-formatted json');
+    expect(() => JSON.parse(errorBody)).to.not.throw(undefined, 'response was not well-formatted json');
     const parsedErrorBody = JSON.parse(errorBody);
     expect(parsedErrorBody).to.haveOwnProperty('error');
     expect(parsedErrorBody.error).to.haveOwnProperty('code', 'NOT_FOUND', 'unexpected error code');

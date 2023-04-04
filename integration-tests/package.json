@@ -1,13 +1,11 @@
 {
   "name": "integration-tests",
   "version": "1.0.0",
-  "description": "",
-  "main": "apigw.docs.test.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "type": "module",
   "devDependencies": {
-    "@aws-sdk/client-cognito-identity-provider": "^3.282.0",
-    "node-fetch": "^2.6.9"
+    "@aws-sdk/client-cognito-identity-provider": "^3.282.0"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.1"
   }
 }

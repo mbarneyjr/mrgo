@@ -58,6 +58,8 @@ const postUrlsHandler = authMiddleware(async (event, session) => {
   const postUrlsRequest = parsePostUrlsBody(event.body);
 
   if (postUrlsRequest.method === 'create') {
+    // eslint-disable-next-line
+    // @ts-ignore
     const response = await createUrl(postUrlsRequest, session);
     if ('error' in response) {
       return {

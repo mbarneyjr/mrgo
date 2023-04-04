@@ -1,5 +1,12 @@
-import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb'
-import ShortUniqueId from 'short-unique-id'
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import ShortUniqueId from 'short-unique-id';
+
+export interface UrlTableRecord extends Record<string, unknown> {
+  /** the id of the url record */
+  id: string
+  /** the user ID */
+  userId: string
+}
 
 export interface Url {
   /** the ID of the URL (slug that's used to redirect) */
@@ -58,8 +65,9 @@ export interface UrlListResponse {
   backwardPaginationToken?: string
 }
 
-export const uuid: ShortUniqueId
+export const uuid: ShortUniqueId;
 
+export function makeKey(record: UrlTableRecord): UrlTableRecord
 export function dbc(): DynamoDBDocumentClient
 export function listUrls(userId: string, limit: number, paginationToken?: string): Promise<UrlListResponse>
 export function createUrl(item: UrlCreateRequest, userId: string): Promise<UrlCreateResponse>

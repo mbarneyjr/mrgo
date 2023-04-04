@@ -1,29 +1,17 @@
 const querystring = require('node:querystring');
 
+/** @type{import('./index').evaluatePathParameters} */
 function evaluatePathParameters(path, pathParameters) {
   return path.split('/').map((element) => {
     if (element[0] === '{' && element.slice(-1) === '}') {
-      const replacedPart = pathParameters[element.split('{').join('').split('}').join('')];
+      const replacedPart = pathParameters?.[element.split('{').join('').split('}').join('')];
       if (replacedPart) return replacedPart;
     }
     return element;
   }).join('/');
 }
 
-/**
- * @param {object} options
- * @param {string} options.method HTTP method
- * @param {string} options.path HTTP path with unevaluated pathParameters
- * @param {Record<string, string>} [options.pathParameters] Path parameters
- * @param {Record<string, string>} [options.queryStringParameters] Querystring parameters
- * @param {Array<string>} [options.cookies] Cookie strings
- * @param {Record<string, string>} [options.headers] Headers
- * @param {string} [options.body] body
- * @param {boolean} [options.isBase64Encoded] body
- * @param {Record<string, string>} [options.stageVariables] Headers
- * @param {Record<string, string>} [options.claims] jwt claims
- * @returns {import('aws-lambda').APIGatewayProxyEventV2WithJWTAuthorizer}
- */
+/** @type {import('./index').getApiGatewayLambdaEvent} */
 exports.getApiGatewayLambdaEvent = (options) => ({
   version: '2.0',
   routeKey: `${options.method} ${options.path}`,
@@ -66,10 +54,7 @@ exports.getApiGatewayLambdaEvent = (options) => ({
   },
 });
 
-/**
- * @param {Partial<import('aws-lambda').Context>} [options] overrides to the default context
- * @returns {import('aws-lambda').Context}
- */
+/** @type {import('./index').getApiGatewayLambdaContext} */
 exports.getApiGatewayLambdaContext = (options) => ({
   awsRequestId: options?.awsRequestId !== undefined ? options.awsRequestId : 'unittest',
   callbackWaitsForEmptyEventLoop: options?.callbackWaitsForEmptyEventLoop !== undefined ? options.callbackWaitsForEmptyEventLoop : false,
@@ -100,7 +85,7 @@ exports.getApiGatewayLambdaContext = (options) => ({
     cognitoIdentityId: 'unittest',
     cognitoIdentityPoolId: 'unittest',
   },
-  done: options?.done !== undefined ? options.done : () => false,
-  fail: options?.fail !== undefined ? options.fail : () => false,
-  succeed: options?.succeed !== undefined ? options.succeed : () => false,
+  done: () => false,
+  fail: () => false,
+  succeed: () => false,
 });

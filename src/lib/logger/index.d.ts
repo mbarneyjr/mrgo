@@ -15,4 +15,4 @@ export type LoggerFunction = (message: string, data?: LogData) => Log;
 
 export const logger: Record<LogLevel, LoggerFunction>;
 
-export function errorJson (err: Error): Record<string, unknown>;
+export function errorJson (err: unknown): Record<string, unknown>;

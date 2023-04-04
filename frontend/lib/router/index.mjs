@@ -15,22 +15,13 @@ import { errorJson, logger } from '../logger/index.mjs';
 
 const router = new Router();
 
-/**
- *
- * @param {string} method
- * @param {string} path
- * @param {import('./index.js').RenderFunction} handler
- */
+/** @type {import('./index.js').addRoute} */
 function addRoute(method, path, handler) {
   const store = router.register(path);
   store[method] = handler;
 }
 
-/**
- * @param {string} method
- * @param {string} path
- * @returns {{ handler: import('./index.js').RenderFunction, params: Record<string, string> } | null}
- */
+/** @type {import('./index.js').getRoute} */
 function getRoute(method, path) {
   const route = router.find(path);
   if (route === null) return null;

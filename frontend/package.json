@@ -1,5 +1,6 @@
 {
   "name": "frontend",
+  "type": "module",
   "dependencies": {
     "@enhance/ssr": "^3.0.9",
     "@medley/router": "^0.2.1",
@@ -11,6 +12,7 @@
     "start": "nodemon -r -e mjs,html,css dotenv/config local/server.mjs"
   },
   "devDependencies": {
+    "@enhance/types": "^0.6.0",
     "connect-livereload": "^0.6.1",
     "livereload": "^0.9.3"
   }

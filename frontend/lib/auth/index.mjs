@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 import { config } from '../config/index.mjs';
 
 /** @type {import('./index.js').getTokens} */
-export async function getTokens(event, authCode) {
+export async function getTokens(_, authCode) {
   const response = await fetch(`${config.auth.baseUrl}/oauth2/token`, {
     method: 'POST',
     headers: {

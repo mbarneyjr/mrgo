@@ -1,3 +1,4 @@
+/** @type {Record<string, string>} */
 export const mimeTypes = {
   html: 'text/html',
   htm: 'text/html',

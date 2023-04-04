@@ -7,7 +7,7 @@ import {
   AdminDeleteUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 
-/** @type {import('./auth').getUserToken} */
+/** @type {import('./auth.js').getUserToken} */
 export async function getUserToken(userPoolId, appClientId, username, password) {
   const client = new CognitoIdentityProviderClient({});
   await client.send(new AdminCreateUserCommand({
@@ -31,11 +31,11 @@ export async function getUserToken(userPoolId, appClientId, username, password) 
       PASSWORD: password,
     },
   }));
-  if (!initiateAuthResponse.AuthenticationResult.IdToken) throw new Error('IdToken not returned from AdminInitiateAuth call');
+  if (!initiateAuthResponse?.AuthenticationResult?.IdToken) throw new Error('IdToken not returned from AdminInitiateAuth call');
   return initiateAuthResponse.AuthenticationResult.IdToken;
 }
 
-/** @type {import('./auth').deleteUser} */
+/** @type {import('./auth.js').deleteUser} */
 export async function deleteUser(userPoolId, username) {
   const client = new CognitoIdentityProviderClient({});
   await client.send(new AdminDisableUserCommand({

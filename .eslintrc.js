@@ -44,7 +44,7 @@ module.exports = {
     'import/no-cycle': 'off',
     'import/no-extraneous-dependencies': ['error', {
       devDependencies: true,
-      packageDir: [__dirname, `${__dirname}/src`, `${__dirname}/frontend`, `${__dirname}/integration-tests`],
+      packageDir: [__dirname, `${__dirname}/backend`, `${__dirname}/frontend`, `${__dirname}/integration-tests`],
     }],
     'import/no-relative-packages': 'off', // off until better monorepo setup in place
     '@typescript-eslint/no-empty-interface': 'off',

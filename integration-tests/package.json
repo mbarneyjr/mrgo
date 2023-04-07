@@ -2,10 +2,9 @@
   "name": "integration-tests",
   "version": "1.0.0",
   "type": "module",
-  "devDependencies": {
-    "@aws-sdk/client-cognito-identity-provider": "^3.282.0"
-  },
+  "devDependencies": {},
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.282.0",
     "node-fetch": "^3.3.1"
   }
 }

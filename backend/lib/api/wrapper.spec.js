@@ -8,7 +8,7 @@ const { getApiGatewayLambdaEvent, getApiGatewayLambdaContext } = require('../tes
 
 const { apiWrapper } = require('./wrapper');
 
-describe('src/lib/api/wrapper.js', async () => {
+describe('backend/lib/api/wrapper.js', async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {

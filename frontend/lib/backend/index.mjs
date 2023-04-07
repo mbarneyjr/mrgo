@@ -5,11 +5,11 @@ import { logger } from '../logger/index.mjs';
 
 /**
  * @param {string} urlId
- * @returns {Promise<import('./index.js').DataOrError<import('../../../src/lib/data/urls/index.js').Url>>}
+ * @returns {Promise<import('./index.js').DataOrError<import('../../../backend/lib/data/urls/index.js').Url>>}
  */
 export async function getUrl(urlId) {
   const response = await fetch(`${config.apiEndpoint}/urls/${urlId}`);
-  const body = /** @type {import('../../../src/lib/data/urls/index.js').Url} */ (await response.json());
+  const body = /** @type {import('../../../backend/lib/data/urls/index.js').Url} */ (await response.json());
   if (response.status < 200 || 299 < response.status) {
     const errorLog = logger.error('failed to get url', { error: body });
     if (response.status === 404) return { error: 'URL not found' };
@@ -23,7 +23,7 @@ export async function getUrl(urlId) {
 /**
  * @param {string | undefined} paginationToken
  * @param {import('../../lib/middleware/auth/index.js').LoggedInSession} session
- * @returns {Promise<import('./index.js').DataOrError<import('../../../src/lib/data/urls/index.js').UrlListResponse>>}
+ * @returns {Promise<import('./index.js').DataOrError<import('../../../backend/lib/data/urls/index.js').UrlListResponse>>}
  */
 export async function getUrls(paginationToken, session) {
   logger.debug('getting urls', { paginationToken });
@@ -45,7 +45,7 @@ export async function getUrls(paginationToken, session) {
     if (399 < response.status && response.status < 500) return { error: errorResponse.error.message };
     throw new Error(JSON.stringify(errorLog));
   }
-  const body = /** @type {import('../../../src/lib/data/urls/index.js').UrlListResponse} */ (await response.json());
+  const body = /** @type {import('../../../backend/lib/data/urls/index.js').UrlListResponse} */ (await response.json());
 
   logger.debug('response', { urls: body.urls.length, forward: body.forwardPaginationToken, backward: body.backwardPaginationToken });
   return {
@@ -59,9 +59,9 @@ export async function getUrls(paginationToken, session) {
 
 /**
  * @param {string} urlId
- * @param {import('../../../src/lib/data/urls/index.js').UrlUpdateRequest} updateRequest
+ * @param {import('../../../backend/lib/data/urls/index.js').UrlUpdateRequest} updateRequest
  * @param {import('../../lib/middleware/auth/index.js').LoggedInSession} session
- * @returns {Promise<import('./index.js').DataOrError<import('../../../src/lib/data/urls/index.js').Url>>}
+ * @returns {Promise<import('./index.js').DataOrError<import('../../../backend/lib/data/urls/index.js').Url>>}
  */
 export async function updateUrl(urlId, updateRequest, session) {
   const response = await fetch(`${config.apiEndpoint}/urls/${urlId}`, {
@@ -71,7 +71,7 @@ export async function updateUrl(urlId, updateRequest, session) {
       Authorization: session.idToken,
     },
   });
-  const body = /** @type {import('../../../src/lib/data/urls/index.js').Url} */ (await response.json());
+  const body = /** @type {import('../../../backend/lib/data/urls/index.js').Url} */ (await response.json());
   if (response.status < 200 || 299 < response.status) {
     const errorLog = logger.error('failed to update url', { error: body });
     throw new Error(JSON.stringify(errorLog));
@@ -82,9 +82,9 @@ export async function updateUrl(urlId, updateRequest, session) {
 }
 
 /**
- * @param {import('../../../src/lib/data/urls/index.js').UrlCreateRequest} urlCreateRequest
+ * @param {import('../../../backend/lib/data/urls/index.js').UrlCreateRequest} urlCreateRequest
  * @param {import('../../lib/middleware/auth/index.js').LoggedInSession} session
- * @returns {Promise<import('./index.js').DataOrError<import('../../../src/lib/data/urls/index.js').UrlCreateResponse>>}
+ * @returns {Promise<import('./index.js').DataOrError<import('../../../backend/lib/data/urls/index.js').UrlCreateResponse>>}
  */
 export async function createUrl(urlCreateRequest, session) {
   const response = await fetch(`${config.apiEndpoint}/urls`, {
@@ -103,7 +103,7 @@ export async function createUrl(urlCreateRequest, session) {
     if (399 < response.status && response.status < 500) return { error: errorResponse.error.message };
     throw new Error(JSON.stringify(errorLog));
   }
-  const body = /** @type {import('../../../src/lib/data/urls/index.js').UrlCreateResponse} */ (await response.json());
+  const body = /** @type {import('../../../backend/lib/data/urls/index.js').UrlCreateResponse} */ (await response.json());
   return {
     result: body,
   };

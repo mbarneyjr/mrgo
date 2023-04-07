@@ -10,7 +10,7 @@ const urlLib = require('./index');
 const errors = require('../../errors');
 const config = require('../../config');
 
-describe('src/lib/data/urls/index.js', async () => {
+describe('backend/lib/data/urls/index.js', async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {

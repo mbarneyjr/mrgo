@@ -7,7 +7,7 @@ const { getApiGatewayLambdaEvent, getApiGatewayLambdaContext } = require('../../
 
 const documentationHandlers = require('./documentation');
 
-describe('src/handlers/api/documentation.js', async () => {
+describe('backend/handlers/api/documentation.js', async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {

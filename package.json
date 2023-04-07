@@ -38,7 +38,7 @@
     "check-coverage": true,
     "all": true,
     "include": [
-      "src/**/*.js"
+      "backend/**/*.js"
     ],
     "exclude": [
       "**/*/test-utils/**/*",

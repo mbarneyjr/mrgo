@@ -8,7 +8,7 @@ const urlsHandlers = require('./urls');
 const urlsLib = require('../../lib/data/urls');
 const { getApiGatewayLambdaEvent, getApiGatewayLambdaContext } = require('../../lib/test-utils');
 
-describe('src/handlers/api/urls.js', async () => {
+describe('backend/handlers/api/urls.js', async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {

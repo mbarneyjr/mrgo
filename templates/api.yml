@@ -38,7 +38,7 @@ Globals:
     MemorySize: 1024
     Timeout: 15
     Tracing: PassThrough
-    CodeUri: ../artifacts/dist.zip
+    CodeUri: ../artifacts/backend.zip
     Environment:
       Variables:
         APPLICATION_NAME: !Ref ApplicationName

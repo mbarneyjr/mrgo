@@ -6,7 +6,7 @@ export const ELEMENT_NAME = 'edit-url-form';
 export function element({ html, state }) {
   const error = state.store?.error ?? '';
   const successfullyUpdatedUrl = state.store?.successfullyUpdatedUrl === true;
-  const url = /** @type {import('../../src/lib/data/urls/index.js').Url} */ (state.store?.url);
+  const url = /** @type {import('../../backend/lib/data/urls/index.js').Url} */ (state.store?.url);
 
   const title = url.name ? `${url.name} (${url.target})` : url.target;
   const successHtml = successfullyUpdatedUrl

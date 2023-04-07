@@ -5,7 +5,7 @@ const { expect } = chai;
 const sinon = require('sinon');
 const { logger, errorJson } = require('./index');
 
-describe('src/lib/logger/index.js', async () => {
+describe('backend/lib/logger/index.js', async () => {
   const sandbox = sinon.createSandbox();
   /** @type {import('sinon').SinonStub} */
   let infoStub;

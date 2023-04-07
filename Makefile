@@ -7,31 +7,31 @@ TEST_ARGS ?=
 node_modules: package-lock.json
 	npm ci
 	touch node_modules
-src/node_modules: src/package-lock.json
-	cd src && npm ci
+backend/node_modules: backend/package-lock.json
+	cd backend && npm ci
 frontend/node_modules: frontend/package-lock.json
 	cd frontend && npm ci
 integration-tests/node_modules: integration-tests/package-lock.json
 	cd integration-tests && npm ci
 
-src/openapi.packaged.json: templates/api.yml
-	cat ./templates/api.yml | yq .Resources.Api.Properties.DefinitionBody > src/openapi.packaged.json
+backend/openapi.packaged.json: templates/api.yml
+	cat ./templates/api.yml | yq .Resources.Api.Properties.DefinitionBody > backend/openapi.packaged.json
 
-artifacts/dist.zip: $(shell find ./src -name '*.js') node_modules src/node_modules src/openapi.packaged.json
+artifacts/backend.zip: $(shell find ./backend -name '*.js') node_modules backend/node_modules backend/openapi.packaged.json
 	mkdir -p artifacts
-	rm -rf artifacts/dist.zip
-	find ./src/* -exec touch -h -t 200101010000 {} +
-	cd src && zip -r -D -9 -y --compression-method deflate -X -x @../package-exclusions.txt @ ../artifacts/dist.zip * | grep -v 'node_modules'
-	@echo "zip file MD5: $$(cat artifacts/dist.zip | openssl dgst -md5)"
+	rm -rf artifacts/backend.zip
+	find ./backend/* -exec touch -h -t 200101010000 {} +
+	cd backend && zip -r -D -9 -y --compression-method deflate -X -x @../package-exclusions.txt @ ../artifacts/backend.zip * | grep -v 'node_modules'
+	@echo "zip file MD5: $$(cat artifacts/backend.zip | openssl dgst -md5)"
 
-artifacts/frontend.zip: $(shell find ./frontend -name '*.*js') node_modules src/node_modules src/openapi.packaged.json
+artifacts/frontend.zip: $(shell find ./frontend -name '*.*js') node_modules backend/node_modules backend/openapi.packaged.json
 	mkdir -p artifacts
 	rm -rf artifacts/frontend.zip
 	find ./frontend/* -exec touch -h -t 200101010000 {} +
 	cd frontend && zip -r -D -9 -y --compression-method deflate -X -x @../package-exclusions.txt @ ../artifacts/frontend.zip * | grep -v 'node_modules'
 	@echo "zip file MD5: $$(cat artifacts/frontend.zip | openssl dgst -md5)"
 
-artifacts/template.packaged.yml: template.yml artifacts/dist.zip artifacts/frontend.zip
+artifacts/template.packaged.yml: template.yml artifacts/backend.zip artifacts/frontend.zip
 	mkdir -p artifacts
 	sam package \
 		--template-file template.yml \
@@ -53,7 +53,7 @@ frontend/.env:
 ### PHONY dependencies
 .PHONY: dependencies lint build test coverage debug package create-change-set deploy-change-set integration-test delete openapi-server clean
 
-dependencies: node_modules src/node_modules frontend/node_modules integration-tests/node_modules
+dependencies: node_modules backend/node_modules frontend/node_modules integration-tests/node_modules
 	pip install -r requirements.txt
 
 lint: dependencies
@@ -61,10 +61,10 @@ lint: dependencies
 	./node_modules/.bin/eslint . --max-warnings=0 --ext .mjs,.js,.ts
 	cfn-lint
 
-build: artifacts/dist.zip artifacts/frontend.zip
+build: artifacts/backend.zip artifacts/frontend.zip
 
-test: src/openapi.packaged.json
-	./node_modules/.bin/env-cmd -f ./.env.test ./node_modules/.bin/mocha './src/{,!(node_modules)/**}/*.spec.js' ${TEST_ARGS}
+test: backend/openapi.packaged.json
+	./node_modules/.bin/env-cmd -f ./.env.test ./node_modules/.bin/mocha './backend/{,!(node_modules)/**}/*.spec.js' ${TEST_ARGS}
 coverage:
 	./node_modules/.bin/nyc $(MAKE) test
 debug:
@@ -153,7 +153,7 @@ clean:
 	rm -rf artifacts
 	rm -rf coverage
 	rm -rf node_modules
-	rm -rf src/node_modules
+	rm -rf backend/node_modules
 	rm -rf integration-tests/node_modules
-	rm -rf src/openapi.packaged.json
+	rm -rf backend/openapi.packaged.json
 	rm -rf openapi/openapi.packaged.json

@@ -1,4 +1,4 @@
-import { UrlCreateRequest } from '../../../src/lib/data/urls/index';
+import { UrlCreateRequest } from '../../../backend/lib/data/urls/index';
 
 interface CreateUrlFormRequest extends UrlCreateRequest {
   method: 'create'

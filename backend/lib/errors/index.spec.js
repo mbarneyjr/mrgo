@@ -5,7 +5,7 @@ const { expect } = chai;
 const sinon = require('sinon');
 const errors = require('./index');
 
-describe('src/lib/errors/index.js', async () => {
+describe('backend/lib/errors/index.js', async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {

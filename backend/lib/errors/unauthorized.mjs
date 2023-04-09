@@ -1,4 +1,4 @@
-const BaseError = require('./base');
+import BaseError from './base.mjs';
 
 class UnauthorizedError extends BaseError {
   static errorCode = 'UNAUTHORIZED';
@@ -15,4 +15,4 @@ class UnauthorizedError extends BaseError {
   }
 }
 
-module.exports = UnauthorizedError;
+export default UnauthorizedError;

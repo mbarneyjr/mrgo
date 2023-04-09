@@ -1,15 +1,15 @@
-const { DynamoDBClient, ConditionalCheckFailedException } = require('@aws-sdk/client-dynamodb');
-const {
+import { DynamoDBClient, ConditionalCheckFailedException } from '@aws-sdk/client-dynamodb';
+import {
   DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand, UpdateCommand,
-} = require('@aws-sdk/lib-dynamodb');
+} from '@aws-sdk/lib-dynamodb';
+import ShortUniqueId from 'short-unique-id';
 
-const { default: ShortUniqueId } = require('short-unique-id');
+import { logger, errorJson } from '../../logger/index.mjs';
+import config from '../../config/index.mjs';
+import * as errors from '../../errors/index.mjs';
 
-const { logger, errorJson } = require('../../logger/index');
-const config = require('../../config');
-const errors = require('../../errors');
-
-exports.uuid = new ShortUniqueId();
+const uuid = new ShortUniqueId();
+export { uuid };
 
 /** @type {import('@aws-sdk/lib-dynamodb').DynamoDBDocumentClient} */
 let documentClient;
@@ -18,7 +18,7 @@ let documentClient;
  * @returns {import('@aws-sdk/lib-dynamodb').DynamoDBDocumentClient}
  */
 /* istanbul ignore next */
-exports.dbc = function dbc() {
+export function dbc() {
   if (documentClient !== undefined) return documentClient;
   const ddb = new DynamoDBClient({});
   documentClient = DynamoDBDocumentClient.from(ddb, {
@@ -32,9 +32,9 @@ exports.dbc = function dbc() {
     },
   });
   return documentClient;
-};
+}
 
-/** @type {import('./index').makeKey} */
+/** @type {import('./index.js').makeKey} */
 function makeKey(record) {
   return {
     id: record.id,
@@ -42,8 +42,8 @@ function makeKey(record) {
   };
 }
 
-/** @type {import('./index').listUrls} */
-exports.listUrls = async (userId, limit, paginationToken) => {
+/** @type {import('./index.js').listUrls} */
+export async function listUrls(userId, limit, paginationToken) {
   let parsedPaginationToken;
   try {
     if (paginationToken) parsedPaginationToken = JSON.parse(Buffer.from(paginationToken, 'base64').toString());
@@ -72,14 +72,14 @@ exports.listUrls = async (userId, limit, paginationToken) => {
     ScanIndexForward: requestedDirection === 'forward',
   };
 
-  /** @type {import('./index').UrlTableRecord[]} */
+  /** @type {import('./index.js').UrlTableRecord[]} */
   let responseItems = [];
   let hasMoreResults = true;
 
   while (responseItems.length < limit + 1 && hasMoreResults) {
-    const response = await exports.dbc().send(new QueryCommand(queryParams));
+    const response = await dbc().send(new QueryCommand(queryParams));
     if (response.Items) {
-      responseItems = responseItems.concat(/** @type {import('./index').UrlTableRecord[]} */ (response.Items));
+      responseItems = responseItems.concat(/** @type {import('./index.js').UrlTableRecord[]} */ (response.Items));
     }
     // if response.LastEvaluatedKey is present, we have more pagination to do
     hasMoreResults = response.LastEvaluatedKey !== undefined;
@@ -112,7 +112,7 @@ exports.listUrls = async (userId, limit, paginationToken) => {
     backwardPaginationToken = Buffer.from(JSON.stringify(backwardPaginationObject)).toString('base64');
   }
 
-  const urls = /** @type {import('./index').Url[]} */ (responseItems?.map((item) => ({
+  const urls = /** @type {import('./index.js').Url[]} */ (responseItems?.map((item) => ({
     id: item.id,
     name: item.name,
     description: item.description,
@@ -125,10 +125,10 @@ exports.listUrls = async (userId, limit, paginationToken) => {
     forwardPaginationToken,
     backwardPaginationToken,
   };
-};
+}
 
-/** @type {import('./index').createUrl} */
-exports.createUrl = async (item, userId) => {
+/** @type {import('./index.js').createUrl} */
+export async function createUrl(item, userId) {
   if (!item.target) throw new errors.ValidationError('missing url target');
   const targetWithProtocol = item.target.includes('://') ? item.target : `https://${item.target}`;
   const status = item.status || 'ACTIVE';
@@ -137,7 +137,7 @@ exports.createUrl = async (item, userId) => {
   while (attempts < 3) {
     attempts += 1;
     try {
-      const urlId = exports.uuid();
+      const urlId = uuid.randomUUID();
       const dynamodbItem = {
         ...item,
         status,
@@ -145,7 +145,7 @@ exports.createUrl = async (item, userId) => {
         userId,
         target: targetWithProtocol,
       };
-      await exports.dbc().send(new PutCommand({
+      await dbc().send(new PutCommand({
         TableName: config.dynamodb.tableName,
         Item: dynamodbItem,
         ConditionExpression: 'attribute_not_exists(#id)',
@@ -169,18 +169,18 @@ exports.createUrl = async (item, userId) => {
     }
   }
   throw new errors.InternalServerError('could not create url, we are experiencing issues');
-};
+}
 
-/** @type {import('./index').getUrl} */
-exports.getUrl = async (urlId) => {
-  const result = await exports.dbc().send(new GetCommand({
+/** @type {import('./index.js').getUrl} */
+export async function getUrl(urlId) {
+  const result = await dbc().send(new GetCommand({
     TableName: config.dynamodb.tableName,
     Key: {
       id: urlId,
     },
   }));
   if (!result?.Item) throw new errors.NotFoundError('url not found', { id: urlId });
-  /** @type {import('./index').Url} */
+  /** @type {import('./index.js').Url} */
   const url = {
     id: result.Item.id,
     name: result.Item.name,
@@ -189,10 +189,10 @@ exports.getUrl = async (urlId) => {
     status: result.Item.status,
   };
   return url;
-};
+}
 
-/** @type {import('./index').putUrl} */
-exports.putUrl = async (urlUpdateRequest, urlId, userId) => {
+/** @type {import('./index.js').putUrl} */
+export async function putUrl(urlUpdateRequest, urlId, userId) {
   /** @type {Record<`#${string}`, string>} */
   const expressionAttributeNames = {
     '#userId': 'userId',
@@ -264,7 +264,7 @@ exports.putUrl = async (urlUpdateRequest, urlId, userId) => {
 
   const updatedItem = {};
   try {
-    const result = await exports.dbc().send(new UpdateCommand(updateParams));
+    const result = await dbc().send(new UpdateCommand(updateParams));
     if (result.Attributes === undefined) throw new errors.InternalServerError('The dynamodb update request did not return Attributes', { result });
     updatedItem.id = result.Attributes.id;
     updatedItem.name = result.Attributes.name;
@@ -278,10 +278,10 @@ exports.putUrl = async (urlUpdateRequest, urlId, userId) => {
     throw err;
   }
   return updatedItem;
-};
+}
 
-/** @type {import('./index').deleteUrl} */
-exports.deleteUrl = async (urlId, userId) => {
+/** @type {import('./index.js').deleteUrl} */
+export async function deleteUrl(urlId, userId) {
   const expressionAttributeNames = {
     '#userId': 'userId',
     '#status': 'status',
@@ -308,10 +308,10 @@ exports.deleteUrl = async (urlId, userId) => {
   };
 
   try {
-    await exports.dbc().send(new UpdateCommand(updateParams));
+    await dbc().send(new UpdateCommand(updateParams));
   } catch (err) {
     if (!(err instanceof ConditionalCheckFailedException)) {
       throw err;
     }
   }
-};
+}

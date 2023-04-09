@@ -1,11 +1,13 @@
-const chai = require('chai');
-chai.use(require('chai-as-promised'));
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import sinon from 'sinon';
+import * as errors from './index.mjs';
+
+chai.use(chaiAsPromised);
 
 const { expect } = chai;
-const sinon = require('sinon');
-const errors = require('./index');
 
-describe('backend/lib/errors/index.js', async () => {
+describe('backend/lib/errors/index.mjs', async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {

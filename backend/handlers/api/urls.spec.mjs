@@ -1,14 +1,14 @@
-const chai = require('chai');
-chai.use(require('chai-as-promised'));
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import sinon from 'sinon';
+import * as urlsHandlers from './urls.mjs';
+import * as urlsLib from '../../lib/data/urls/index.mjs';
+import { getApiGatewayLambdaEvent, getApiGatewayLambdaContext } from '../../lib/test-utils/index.mjs';
 
+chai.use(chaiAsPromised);
 const { expect } = chai;
-const sinon = require('sinon');
 
-const urlsHandlers = require('./urls');
-const urlsLib = require('../../lib/data/urls');
-const { getApiGatewayLambdaEvent, getApiGatewayLambdaContext } = require('../../lib/test-utils');
-
-describe('backend/handlers/api/urls.js', async () => {
+describe('backend/handlers/api/urls.mjs', async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
@@ -22,7 +22,7 @@ describe('backend/handlers/api/urls.js', async () => {
   describe('listHandler', async () => {
     it('should list urls', async () => {
       const expected = {
-        /** @type {import('../../lib/data/urls/index').Url[]} */
+        /** @type {import('../../lib/data/urls/index.js').Url[]} */
         urls: [{
           description: 'unittest',
           name: 'unittest',
@@ -42,7 +42,7 @@ describe('backend/handlers/api/urls.js', async () => {
 
     it('should list urls with limit querystring parameter', async () => {
       const expected = {
-        /** @type {import('../../lib/data/urls/index').Url[]} */
+        /** @type {import('../../lib/data/urls/index.js').Url[]} */
         urls: [{
           description: 'unittest',
           name: 'unittest',
@@ -63,7 +63,7 @@ describe('backend/handlers/api/urls.js', async () => {
 
   describe('createHandler', async () => {
     it('should create a url', async () => {
-      /** @type {import('../../lib/data/urls/index').Url} */
+      /** @type {import('../../lib/data/urls/index.js').Url} */
       const expected = {
         description: 'unittest',
         name: 'unittest',
@@ -90,7 +90,7 @@ describe('backend/handlers/api/urls.js', async () => {
 
   describe('getHandler', async () => {
     it('should get a url', async () => {
-      /** @type {import('../../lib/data/urls/index').Url} */
+      /** @type {import('../../lib/data/urls/index.js').Url} */
       const expected = {
         description: 'unittest',
         name: 'unittest',
@@ -116,7 +116,7 @@ describe('backend/handlers/api/urls.js', async () => {
 
   describe('putHandler', async () => {
     it('should put a url', async () => {
-      /** @type {import('../../lib/data/urls/index').Url} */
+      /** @type {import('../../lib/data/urls/index.js').Url} */
       const expected = {
         description: 'unittest',
         name: 'unittest',

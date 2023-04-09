@@ -1,10 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const { apiWrapper } = require('../../lib/api/wrapper');
+import { readFileSync } from 'fs';
+import * as path from 'path';
+import { apiWrapper } from '../../lib/api/wrapper.mjs';
 
-exports.handler = apiWrapper(async (event) => {
+export const handler = apiWrapper(async (event) => {
   const queryStringParameters = event.queryStringParameters || {};
-  const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '../../openapi.packaged.json')).toString());
+  const spec = JSON.parse(readFileSync(path.join(__dirname, '../../openapi.packaged.json')).toString());
 
   spec.info.title = `${process.env.APPLICATION_NAME}-${process.env.ENVIRONMENT_NAME}`;
 
@@ -12,7 +12,7 @@ exports.handler = apiWrapper(async (event) => {
     return spec;
   }
 
-  const html = fs.readFileSync(path.join(__dirname, './assets/openapi-template.html')).toString()
+  const html = readFileSync(path.join(__dirname, './assets/openapi-template.html')).toString()
     .replace('$title', spec.info.title)
     .replace('$spec', JSON.stringify(spec));
 

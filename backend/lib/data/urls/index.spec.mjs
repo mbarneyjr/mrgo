@@ -1,14 +1,15 @@
-const chai = require('chai');
-chai.use(require('chai-as-promised'));
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import { ConditionalCheckFailedException } from '@aws-sdk/client-dynamodb';
+import sinon from 'sinon';
+
+import * as urlLib from './index.mjs';
+import * as errors from '../../errors/index.mjs';
+import config from '../../config/index.mjs';
+
+chai.use(chaiAsPromised);
 
 const { expect } = chai;
-const sinon = require('sinon');
-
-const { ConditionalCheckFailedException } = require('@aws-sdk/client-dynamodb');
-
-const urlLib = require('./index');
-const errors = require('../../errors');
-const config = require('../../config');
 
 describe('backend/lib/data/urls/index.js', async () => {
   const sandbox = sinon.createSandbox();

@@ -1,11 +1,11 @@
-const chai = require('chai');
-chai.use(require('chai-as-promised'));
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import sinon from 'sinon';
+import { getApiGatewayLambdaEvent, getApiGatewayLambdaContext } from '../../lib/test-utils/index.mjs';
+import * as documentationHandlers from './documentation.mjs';
 
+chai.use(chaiAsPromised);
 const { expect } = chai;
-const sinon = require('sinon');
-const { getApiGatewayLambdaEvent, getApiGatewayLambdaContext } = require('../../lib/test-utils');
-
-const documentationHandlers = require('./documentation');
 
 describe('backend/handlers/api/documentation.js', async () => {
   const sandbox = sinon.createSandbox();

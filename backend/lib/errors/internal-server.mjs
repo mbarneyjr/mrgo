@@ -1,4 +1,4 @@
-const BaseError = require('./base');
+import BaseError from './base.mjs';
 
 class InternalServerError extends BaseError {
   static errorCode = 'INTERNAL_SERVER_ERROR';
@@ -17,4 +17,4 @@ class InternalServerError extends BaseError {
   }
 }
 
-module.exports = InternalServerError;
+export default InternalServerError;

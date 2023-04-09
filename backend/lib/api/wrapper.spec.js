@@ -1,14 +1,15 @@
-const chai = require('chai');
-chai.use(require('chai-as-promised'));
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import sinon from 'sinon';
+import { BaseError } from '../errors/index.mjs';
+import { getApiGatewayLambdaEvent, getApiGatewayLambdaContext } from '../test-utils/index.mjs';
+import { apiWrapper } from './wrapper.mjs';
+
+chai.use(chaiAsPromised);
 
 const { expect } = chai;
-const sinon = require('sinon');
-const BaseError = require('../errors/base');
-const { getApiGatewayLambdaEvent, getApiGatewayLambdaContext } = require('../test-utils');
 
-const { apiWrapper } = require('./wrapper');
-
-describe('backend/lib/api/wrapper.js', async () => {
+describe('backend/lib/api/wrapper.mjs', async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {

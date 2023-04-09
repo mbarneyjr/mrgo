@@ -1,9 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const apiSchemaBuilder = require('api-schema-builder');
-
-const errors = require('../errors');
-const { logger, errorJson } = require('../logger');
+import fs from 'fs';
+import path from 'path';
+import apiSchemaBuilder from 'api-schema-builder';
+import * as errors from '../errors/index.mjs';
+import { logger, errorJson } from '../logger/index.mjs';
 
 /** @type {Record<string, string | number | boolean>} */
 const commonHeaders = {
@@ -12,7 +11,7 @@ const commonHeaders = {
 
 /**
  * @param {import('aws-lambda').APIGatewayProxyEventV2WithJWTAuthorizer} event
- * @returns {Promise<import('./wrapper').WrappedEvent>}
+ * @returns {Promise<import('./wrapper.js').WrappedEvent>}
  */
 async function parseEvent(event) {
   const parsedEvent = structuredClone(event);
@@ -25,7 +24,7 @@ async function parseEvent(event) {
   return parsedEvent;
 }
 
-/** @type {import('./wrapper').formatOpenapiValidationErrors} */
+/** @type {import('./wrapper.js').formatOpenapiValidationErrors} */
 function formatOpenapiValidationErrors(parameterErrors, bodyErrors) {
   const formattedParameterErrors = parameterErrors?.map((parameterError) => {
     return {
@@ -50,8 +49,8 @@ function formatOpenapiValidationErrors(parameterErrors, bodyErrors) {
   ];
 }
 
-/** @type {import('./wrapper').validateEvent} */
-exports.validateEvent = (event) => {
+/** @type {import('./wrapper.js').validateEvent} */
+export function validateEvent(event) {
   const spec = /** @type {import('api-schema-builder').OpenapiSpec} */ (JSON.parse(fs.readFileSync(path.join(__dirname, '../../openapi.packaged.json')).toString()));
   const schema = apiSchemaBuilder.buildSchemaSync(spec);
   const [requestedMethod, requestedPath] = event.routeKey.split(' ');
@@ -69,10 +68,10 @@ exports.validateEvent = (event) => {
     const validationErrorMessage = validationErrors.map((validationError) => `${validationError.dataPath}: ${validationError.message}`).join('\n');
     throw new errors.ValidationError(validationErrorMessage, validationErrors);
   }
-};
+}
 
-/** @type {import('./wrapper').apiWrapper} */
-exports.apiWrapper = (handlerFunction, options) => {
+/** @type {import('./wrapper.js').apiWrapper} */
+export function apiWrapper(handlerFunction, options) {
   return async (event, context) => {
     /* eslint-disable-next-line no-console */
     logger.info('event', { event });
@@ -87,10 +86,10 @@ exports.apiWrapper = (handlerFunction, options) => {
         }
       }
 
-      /** @type {import('./wrapper').validateEvent<object>} */
-      exports.validateEvent(parsedEvent);
+      /** @type {import('./wrapper.js').validateEvent<object>} */
+      validateEvent(parsedEvent);
 
-      /** @type {import('./wrapper').ApiResponse} */
+      /** @type {import('./wrapper.js').ApiResponse} */
       const lambdaResult = {
         statusCode: 200,
         headers: commonHeaders,
@@ -138,4 +137,4 @@ exports.apiWrapper = (handlerFunction, options) => {
       throw newError;
     }
   };
-};
+}

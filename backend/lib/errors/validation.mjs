@@ -1,4 +1,4 @@
-const BaseError = require('./base');
+import BaseError from './base.mjs';
 
 class ValidationError extends BaseError {
   static errorCode = 'INVALID_REQUEST';
@@ -16,4 +16,4 @@ class ValidationError extends BaseError {
   }
 }
 
-module.exports = ValidationError;
+export default ValidationError;

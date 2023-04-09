@@ -59,7 +59,7 @@ module.exports = {
     'import/resolver': {
       node: {
         extensions: ['.js', '.mjs', '.ts', '.d.ts'],
-        moduleDirectory: ['node_modules', 'src', 'frontend', 'integration-tests'],
+        moduleDirectory: ['node_modules', 'backend', 'frontend', 'integration-tests'],
       },
     },
   },

@@ -10,7 +10,7 @@ function getLogLevel(input) {
     warn: 30,
     error: 40,
   };
-  if (input !== undefined && input in logLevelMap) return logLevelMap[/** @type {import('./index').LogLevel} */ (input)];
+  if (input !== undefined && input in logLevelMap) return logLevelMap[/** @type {import('./index.js').LogLevel} */ (input)];
   return logLevelMap.debug;
 }
 
@@ -40,5 +40,7 @@ const logger = {
 /** @type {import('./index.js').errorJson} */
 const errorJson = (err) => JSON.parse(JSON.stringify(err, Object.getOwnPropertyNames(err)));
 
-exports.logger = logger;
-exports.errorJson = errorJson;
+export {
+  logger,
+  errorJson,
+};

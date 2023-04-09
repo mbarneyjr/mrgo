@@ -1,4 +1,4 @@
-const BaseError = require('./base');
+import BaseError from './base.mjs';
 
 class NotFoundError extends BaseError {
   static errorCode = 'NOT_FOUND';
@@ -17,4 +17,4 @@ class NotFoundError extends BaseError {
   }
 }
 
-module.exports = NotFoundError;
+export default NotFoundError;

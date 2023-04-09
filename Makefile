@@ -17,7 +17,7 @@ integration-tests/node_modules: integration-tests/package-lock.json
 backend/openapi.packaged.json: templates/api.yml
 	cat ./templates/api.yml | yq .Resources.Api.Properties.DefinitionBody > backend/openapi.packaged.json
 
-artifacts/backend.zip: $(shell find ./backend -name '*.js') node_modules backend/node_modules backend/openapi.packaged.json
+artifacts/backend.zip: $(shell find ./backend -name '*.*js') node_modules backend/node_modules backend/openapi.packaged.json
 	mkdir -p artifacts
 	rm -rf artifacts/backend.zip
 	find ./backend/* -exec touch -h -t 200101010000 {} +

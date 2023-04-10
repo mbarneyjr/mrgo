@@ -307,6 +307,7 @@ export default class UrlsLib {
 
     try {
       await UrlsLib.dbc().send(new UpdateCommand(updateParams));
+      /* c8 ignore next */
     } catch (err) {
       if (!(err instanceof ConditionalCheckFailedException)) {
         throw err;

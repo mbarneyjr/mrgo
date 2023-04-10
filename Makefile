@@ -53,7 +53,7 @@ build: artifacts/backend.zip artifacts/frontend.zip
 test: backend/openapi.packaged.json
 	./node_modules/.bin/env-cmd -f ./.env.test ./node_modules/.bin/mocha './backend/{,!(node_modules)/**}/*.spec.mjs' ${TEST_ARGS}
 coverage:
-	./node_modules/.bin/nyc $(MAKE) test
+	./node_modules/.bin/c8 $(MAKE) test
 debug:
 	$(MAKE) test TEST_ARGS="--inspect-brk"
 
@@ -82,7 +82,6 @@ openapi-server:
 	npx nodemon --watch ./templates/api.yml --exec 'yq .Resources.Api.Properties.DefinitionBody < ./templates/api.yml > openapi/openapi.packaged.json'
 
 clean:
-	rm -rf .nyc_output
 	rm -rf artifacts
 	rm -rf coverage
 	rm -rf node_modules

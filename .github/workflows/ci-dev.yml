@@ -11,7 +11,7 @@ env:
   ENVIRONMENT_NAME: dev
   ARTIFACT_BUCKET: ci-artifacts-${{ secrets.DEVOPS_ACCOUNT_ID }}-us-east-2
   ARTIFACT_PREFIX: mrgo
-  CHANGE_SET_NAME: release-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}
+  CHANGE_SET_NAME: release-${{ github.run_number }}-${{ github.run_attempt }}
   CHANGE_SET_DESCRIPTION: ${{ github.event.head_commit.message }}
   HOSTED_ZONE_NAME: dev.mrgo.io
   DOMAIN_NAME: dev.mrgo.io

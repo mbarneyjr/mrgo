@@ -1,8 +1,8 @@
 MAKEFLAGS=--warn-undefined-variables
 
-STACK_NAME ?= ${APPLICATION_NAME}-${ENVIRONMENT_NAME}
-AWS_REGION ?= us-east-2
-TEST_ARGS ?=
+export STACK_NAME ?= ${APPLICATION_NAME}-${ENVIRONMENT_NAME}
+export AWS_REGION ?= us-east-2
+export TEST_ARGS ?=
 
 node_modules: package-lock.json
 	npm ci
@@ -18,26 +18,13 @@ backend/openapi.packaged.json: templates/api.yml
 	cat ./templates/api.yml | yq .Resources.Api.Properties.DefinitionBody > backend/openapi.packaged.json
 
 artifacts/backend.zip: $(shell find ./backend -name '*.*js') node_modules backend/node_modules backend/openapi.packaged.json
-	mkdir -p artifacts
-	rm -rf artifacts/backend.zip
-	find ./backend/* -exec touch -h -t 200101010000 {} +
-	cd backend && zip -r -D -9 -y --compression-method deflate -X -x @../package-exclusions.txt @ ../artifacts/backend.zip * | grep -v 'node_modules'
-	@echo "zip file MD5: $$(cat artifacts/backend.zip | openssl dgst -md5)"
+	./scripts/build-artifact.sh backend
 
 artifacts/frontend.zip: $(shell find ./frontend -name '*.*js') node_modules backend/node_modules backend/openapi.packaged.json
-	mkdir -p artifacts
-	rm -rf artifacts/frontend.zip
-	find ./frontend/* -exec touch -h -t 200101010000 {} +
-	cd frontend && zip -r -D -9 -y --compression-method deflate -X -x @../package-exclusions.txt @ ../artifacts/frontend.zip * | grep -v 'node_modules'
-	@echo "zip file MD5: $$(cat artifacts/frontend.zip | openssl dgst -md5)"
+	./scripts/build-artifact.sh frontend
 
 artifacts/template.packaged.yml: template.yml artifacts/backend.zip artifacts/frontend.zip
-	mkdir -p artifacts
-	sam package \
-		--template-file template.yml \
-		--s3-bucket "${ARTIFACT_BUCKET}" \
-		--s3-prefix "${ARTIFACT_PREFIX}" \
-		--output-template-file artifacts/template.packaged.yml
+	./scripts/package.sh
 	touch artifacts/template.packaged.yml
 
 .PHONY: frontend/.env
@@ -73,64 +60,10 @@ debug:
 package: artifacts/template.packaged.yml
 
 create-change-set:
-	@echo "Deploying ${STACK_NAME} with changeset ${CHANGE_SET_NAME}"
-	export STACK_STATUS=$$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --query Stacks[0].StackStatus --output text 2> /dev/null || echo "NO_STACK"); \
-	aws cloudformation create-change-set \
-		--stack-name ${STACK_NAME} \
-		--template-body file://artifacts/template.packaged.yml \
-		--parameters \
-			ParameterKey=ApplicationName,ParameterValue='"${APPLICATION_NAME}"' \
-			ParameterKey=EnvironmentName,ParameterValue='"${ENVIRONMENT_NAME}"' \
-			ParameterKey=HostedZoneName,ParameterValue='"${HOSTED_ZONE_NAME}"' \
-			ParameterKey=DomainName,ParameterValue='"${DOMAIN_NAME}"' \
-		--tags \
-			Key=ApplicationName,Value=${APPLICATION_NAME} \
-			Key=EnvironmentName,Value=${ENVIRONMENT_NAME} \
-		--capabilities CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM CAPABILITY_IAM \
-		--change-set-name "${CHANGE_SET_NAME}" \
-		--description "${CHANGE_SET_DESCRIPTION}" \
-		--include-nested-stacks \
-		--change-set-type $$(`echo "NO_STACK,REVIEW_IN_PROGRESS" | grep -w -q "$${STACK_STATUS}"` && echo "CREATE" || echo "UPDATE")
-	@echo "Waiting for change set to be created..."
-	@CHANGE_SET_STATUS=None; \
-	while [[ "$$CHANGE_SET_STATUS" != "CREATE_COMPLETE" && "$$CHANGE_SET_STATUS" != "FAILED" ]]; do \
-		CHANGE_SET_STATUS=$$(aws cloudformation describe-change-set --stack-name ${STACK_NAME} --change-set-name ${CHANGE_SET_NAME} --output text --query 'Status'); \
-	done; \
-	aws cloudformation describe-change-set --stack-name ${STACK_NAME} --change-set-name ${CHANGE_SET_NAME} > artifacts/${STACK_NAME}-${CHANGE_SET_NAME}.json; \
-	if [[ "$$CHANGE_SET_STATUS" == "FAILED" ]]; then \
-		CHANGE_SET_STATUS_REASON=$$(aws cloudformation describe-change-set --stack-name ${STACK_NAME} --change-set-name ${CHANGE_SET_NAME} --output text --query 'StatusReason'); \
-		if [[ "$$CHANGE_SET_STATUS_REASON" == "The submitted information didn't contain changes. Submit different information to create a change set." ]]; then \
-			echo "ChangeSet contains no changes."; \
-		else \
-			echo "Change set failed to create."; \
-			echo "$$CHANGE_SET_STATUS_REASON"; \
-			exit 1; \
-		fi; \
-	fi;
-	@echo "Change set ${STACK_NAME} - ${CHANGE_SET_NAME} created."
-	npx cfn-changeset-viewer --stack-name ${STACK_NAME} --change-set-name ${CHANGE_SET_NAME}
+	./scripts/create-change-set.sh
 
 deploy-change-set: node_modules
-	CHANGE_SET_STATUS=$$(aws cloudformation describe-change-set --stack-name ${STACK_NAME} --change-set-name ${CHANGE_SET_NAME} --output text --query 'Status'); \
-	if [[ "$$CHANGE_SET_STATUS" == "FAILED" ]]; then \
-		CHANGE_SET_STATUS_REASON=$$(aws cloudformation describe-change-set --stack-name ${STACK_NAME} --change-set-name ${CHANGE_SET_NAME} --output text --query 'StatusReason'); \
-		echo "$$CHANGE_SET_STATUS_REASON"; \
-		if [[ "$$CHANGE_SET_STATUS_REASON" == "The submitted information didn't contain changes. Submit different information to create a change set." ]]; then \
-			echo "ChangeSet contains no changes."; \
-		else \
-			echo "Change set failed to create."; \
-			exit 1; \
-		fi; \
-	else \
-		aws cloudformation execute-change-set \
-			--stack-name ${STACK_NAME} \
-			--change-set-name ${CHANGE_SET_NAME}; \
-	fi;
-	npx cfn-event-tailer ${STACK_NAME}
-	aws cloudformation describe-stacks \
-		--stack-name ${STACK_NAME} \
-		--query Stacks[0].Outputs[].[OutputKey,OutputValue] \
-		--output table
+	./scripts/deploy-change-set.sh
 
 integration-test: node_modules integration-tests/node_modules
 	export API_ENDPOINT=$$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --query "Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue" --output text); \

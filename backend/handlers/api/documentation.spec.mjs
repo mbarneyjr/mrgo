@@ -7,7 +7,7 @@ import * as documentationHandlers from './documentation.mjs';
 chai.use(chaiAsPromised);
 const { expect } = chai;
 
-describe('backend/handlers/api/documentation.js', async () => {
+describe('backend/handlers/api/documentation.mjs', async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {

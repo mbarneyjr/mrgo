@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised';
 import { ConditionalCheckFailedException } from '@aws-sdk/client-dynamodb';
 import sinon from 'sinon';
 
-import * as urlLib from './index.mjs';
+import UrlsLib from './index.mjs';
 import * as errors from '../../errors/index.mjs';
 import config from '../../config/index.mjs';
 
@@ -11,7 +11,7 @@ chai.use(chaiAsPromised);
 
 const { expect } = chai;
 
-describe('backend/lib/data/urls/index.js', async () => {
+describe('backend/lib/data/urls/index.mjs', async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
@@ -24,7 +24,7 @@ describe('backend/lib/data/urls/index.js', async () => {
 
   describe('listUrls', async () => {
     it('should return a list of urls', async () => {
-      sandbox.stub(urlLib.dbc(), 'send')
+      sandbox.stub(UrlsLib.dbc(), 'send')
         .onFirstCall()
         .resolves({
           Items: [{
@@ -48,7 +48,7 @@ describe('backend/lib/data/urls/index.js', async () => {
         .resolves({
           Items: [],
         });
-      const result = await urlLib.listUrls('test-userId', 10);
+      const result = await UrlsLib.listUrls('test-userId', 10);
       expect(result).to.deep.equal({
         urls: [{
           id: 'test-id',
@@ -69,7 +69,7 @@ describe('backend/lib/data/urls/index.js', async () => {
     });
 
     it('should handle backwards pagination, keeping order', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves({
         Items: [{
           id: 'test-id',
           name: 'test-name',
@@ -98,7 +98,7 @@ describe('backend/lib/data/urls/index.js', async () => {
         direction: 'backward',
         exclusiveStartKey: { id: 'past-id' },
       })).toString('base64');
-      const result = await urlLib.listUrls('test-userId', 2, backwardPaginationToken);
+      const result = await UrlsLib.listUrls('test-userId', 2, backwardPaginationToken);
 
       expect(result).to.deep.equal({
         urls: [{
@@ -120,7 +120,7 @@ describe('backend/lib/data/urls/index.js', async () => {
     });
 
     it('should throw when invalid paginationToken specified', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves({
         Items: [{
           id: 'test-id',
           name: 'test-name',
@@ -132,14 +132,14 @@ describe('backend/lib/data/urls/index.js', async () => {
           id: 'test-id',
         },
       });
-      await expect(urlLib.listUrls('test-userId', 10, 'invalid-paginationToken')).to.eventually.be.rejectedWith(errors.ValidationError);
+      await expect(UrlsLib.listUrls('test-userId', 10, 'invalid-paginationToken')).to.eventually.be.rejectedWith(errors.ValidationError);
     });
 
     it('should return empty array when dynamo returns undefined response.Items', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves({
         Items: undefined,
       });
-      const response = await urlLib.listUrls('test-userId', 10);
+      const response = await UrlsLib.listUrls('test-userId', 10);
       expect(response).to.deep.equal({
         urls: [],
         backwardPaginationToken: undefined,
@@ -148,7 +148,7 @@ describe('backend/lib/data/urls/index.js', async () => {
     });
 
     it('should not return paginationToken when one not returned from dynamo', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves({
         Items: [{
           id: 'test-id',
           name: 'test-name',
@@ -157,7 +157,7 @@ describe('backend/lib/data/urls/index.js', async () => {
           status: 'INACTIVE',
         }],
       });
-      const result = await urlLib.listUrls('test-userId', 10);
+      const result = await UrlsLib.listUrls('test-userId', 10);
       expect(result).to.deep.equal({
         urls: [{
           id: 'test-id',
@@ -174,10 +174,10 @@ describe('backend/lib/data/urls/index.js', async () => {
 
   describe('createUrl', async () => {
     it('should create and return the url', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves();
-      sandbox.stub(urlLib, 'uuid').returns('test-id');
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves();
+      sandbox.stub(UrlsLib.uuid, 'randomUUID').returns('test-id');
 
-      const result = await urlLib.createUrl({
+      const result = await UrlsLib.createUrl({
         name: 'test-name',
         description: 'test-description',
         target: 'https://mbarney.me',
@@ -193,10 +193,10 @@ describe('backend/lib/data/urls/index.js', async () => {
     });
 
     it('should handle a hostname for target', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves();
-      sandbox.stub(urlLib, 'uuid').returns('test-id');
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves();
+      sandbox.stub(UrlsLib.uuid, 'randomUUID').returns('test-id');
 
-      const result = await urlLib.createUrl({
+      const result = await UrlsLib.createUrl({
         name: 'test-name',
         description: 'test-description',
         target: 'mbarney.me',
@@ -212,10 +212,10 @@ describe('backend/lib/data/urls/index.js', async () => {
     });
 
     it('should use ACTIVE as default status', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves();
-      sandbox.stub(urlLib, 'uuid').returns('test-id');
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves();
+      sandbox.stub(UrlsLib.uuid, 'randomUUID').returns('test-id');
 
-      const result = await urlLib.createUrl({
+      const result = await UrlsLib.createUrl({
         name: 'test-name',
         description: 'test-description',
         target: 'https://mbarney.me',
@@ -230,10 +230,10 @@ describe('backend/lib/data/urls/index.js', async () => {
     });
 
     it('should throw if target is invalid', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves();
-      sandbox.stub(urlLib, 'uuid').returns('test-id');
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves();
+      sandbox.stub(UrlsLib.uuid, 'randomUUID').returns('test-id');
 
-      await expect(urlLib.createUrl({
+      await expect(UrlsLib.createUrl({
         name: 'test-name',
         description: 'test-description',
         target: '',
@@ -242,13 +242,13 @@ describe('backend/lib/data/urls/index.js', async () => {
     });
 
     it('should automatically retry if duplicate uuids generated causing dynamodb condition check to fail', async () => {
-      sandbox.stub(urlLib.dbc(), 'send')
+      sandbox.stub(UrlsLib.dbc(), 'send')
         .onFirstCall()
         .rejects(new ConditionalCheckFailedException({ $metadata: {}, message: 'the thing failed' }))
         .onSecondCall()
         .resolves();
-      sandbox.stub(urlLib, 'uuid').returns('test-id');
-      const result = await urlLib.createUrl({
+      sandbox.stub(UrlsLib.uuid, 'randomUUID').returns('test-id');
+      const result = await UrlsLib.createUrl({
         name: 'test-name',
         description: 'test-description',
         target: 'https://mbarney.me',
@@ -264,9 +264,9 @@ describe('backend/lib/data/urls/index.js', async () => {
     });
 
     it('should limit retry if duplicate uuids generated causing dynamodb condition check to fail', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').rejects(new ConditionalCheckFailedException({ $metadata: {}, message: 'the thing failed' }));
-      sandbox.stub(urlLib, 'uuid').returns('test-id');
-      await expect(urlLib.createUrl({
+      sandbox.stub(UrlsLib.dbc(), 'send').rejects(new ConditionalCheckFailedException({ $metadata: {}, message: 'the thing failed' }));
+      sandbox.stub(UrlsLib.uuid, 'randomUUID').returns('test-id');
+      await expect(UrlsLib.createUrl({
         name: 'test-name',
         description: 'test-description',
         target: 'https://mbarney.me',
@@ -275,10 +275,10 @@ describe('backend/lib/data/urls/index.js', async () => {
     }).timeout(6000);
 
     it('should fail if dynamodb throws', async () => {
-      sandbox.stub(urlLib.dbc(), 'send')
+      sandbox.stub(UrlsLib.dbc(), 'send')
         .rejects(new Error('something bad happened'));
-      sandbox.stub(urlLib, 'uuid').returns('test-id');
-      await expect(urlLib.createUrl({
+      sandbox.stub(UrlsLib.uuid, 'randomUUID').returns('test-id');
+      await expect(UrlsLib.createUrl({
         name: 'test-name',
         description: 'test-description',
         target: 'https://mbarney.me',
@@ -289,7 +289,7 @@ describe('backend/lib/data/urls/index.js', async () => {
 
   describe('getUrl', async () => {
     it('should get a single url', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves({
         Item: {
           id: 'test-id',
           name: 'test-name',
@@ -299,7 +299,7 @@ describe('backend/lib/data/urls/index.js', async () => {
           userId: 'test-userId',
         },
       });
-      const result = await urlLib.getUrl('test-urlId');
+      const result = await UrlsLib.getUrl('test-urlId');
       expect(result).to.deep.equal({
         id: 'test-id',
         name: 'test-name',
@@ -310,16 +310,16 @@ describe('backend/lib/data/urls/index.js', async () => {
     });
 
     it('should throw a NotFoundError if userId is not the same', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves({
         Item: undefined,
       });
-      await expect(urlLib.getUrl('test-urlId')).to.be.eventually.rejectedWith(errors.NotFoundError);
+      await expect(UrlsLib.getUrl('test-urlId')).to.be.eventually.rejectedWith(errors.NotFoundError);
     });
   });
 
   describe('putUrl', async () => {
     it('should update a url', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves({
         Attributes: {
           id: 'test-id',
           name: 'test-name',
@@ -329,7 +329,7 @@ describe('backend/lib/data/urls/index.js', async () => {
           userId: 'test-userId',
         },
       });
-      const result = await urlLib.putUrl({
+      const result = await UrlsLib.putUrl({
         name: 'test-name',
         description: 'test-description',
         target: 'https://mbarney.me',
@@ -345,7 +345,7 @@ describe('backend/lib/data/urls/index.js', async () => {
     });
 
     it('should update a url with empty object', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves({
         Attributes: {
           id: 'test-id',
           name: 'test-name',
@@ -355,11 +355,11 @@ describe('backend/lib/data/urls/index.js', async () => {
           userId: 'test-userId',
         },
       });
-      await urlLib.putUrl({}, 'test-id', 'test-userId');
+      await UrlsLib.putUrl({}, 'test-id', 'test-userId');
     });
 
     it('should update a url with null items', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves({
         Attributes: {
           id: 'test-id',
           name: 'test-name',
@@ -369,7 +369,7 @@ describe('backend/lib/data/urls/index.js', async () => {
           userId: 'test-userId',
         },
       });
-      const result = await urlLib.putUrl({
+      const result = await UrlsLib.putUrl({
         name: null,
         description: null,
         target: null,
@@ -385,8 +385,8 @@ describe('backend/lib/data/urls/index.js', async () => {
     });
 
     it('should throw not found error when condition check fails', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').rejects(new ConditionalCheckFailedException({ $metadata: {}, message: 'the thing failed' }));
-      await expect(urlLib.putUrl({
+      sandbox.stub(UrlsLib.dbc(), 'send').rejects(new ConditionalCheckFailedException({ $metadata: {}, message: 'the thing failed' }));
+      await expect(UrlsLib.putUrl({
         name: null,
         description: null,
         target: null,
@@ -395,10 +395,10 @@ describe('backend/lib/data/urls/index.js', async () => {
     });
 
     it('should throw if dynamodb returns undefined response.Attributes', async () => {
-      sandbox.stub(urlLib.dbc(), 'send').resolves({
+      sandbox.stub(UrlsLib.dbc(), 'send').resolves({
         Attributes: undefined,
       });
-      await expect(urlLib.putUrl({
+      await expect(UrlsLib.putUrl({
         name: null,
         description: null,
         target: null,
@@ -408,8 +408,8 @@ describe('backend/lib/data/urls/index.js', async () => {
 
     it('should throw error when other error thrown', async () => {
       const err = new Error('bad things happened');
-      sandbox.stub(urlLib.dbc(), 'send').rejects(err);
-      await expect(urlLib.putUrl({
+      sandbox.stub(UrlsLib.dbc(), 'send').rejects(err);
+      await expect(UrlsLib.putUrl({
         name: null,
         description: null,
         target: null,
@@ -421,14 +421,14 @@ describe('backend/lib/data/urls/index.js', async () => {
   describe('deleteUrl', async () => {
     it('should not throw an error when condition check thrown', async () => {
       sandbox.stub(config.dynamodb, 'tableName').value('test-table');
-      sandbox.stub(urlLib.dbc(), 'send').rejects(new ConditionalCheckFailedException({ $metadata: {}, message: 'the thing failed' }));
-      await urlLib.deleteUrl('test-urlId', 'test-userId');
+      sandbox.stub(UrlsLib.dbc(), 'send').rejects(new ConditionalCheckFailedException({ $metadata: {}, message: 'the thing failed' }));
+      await UrlsLib.deleteUrl('test-urlId', 'test-userId');
     });
 
     it('should throw an error when unexpected error thrown', async () => {
       const err = new Error('something bad happened');
-      sandbox.stub(urlLib.dbc(), 'send').rejects(err);
-      await expect(urlLib.deleteUrl('test-urlId', 'test-userId')).to.eventually.be.rejectedWith(err);
+      sandbox.stub(UrlsLib.dbc(), 'send').rejects(err);
+      await expect(UrlsLib.deleteUrl('test-urlId', 'test-userId')).to.eventually.be.rejectedWith(err);
     });
   });
 });

@@ -2,7 +2,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
 import * as urlsHandlers from './urls.mjs';
-import * as urlsLib from '../../lib/data/urls/index.mjs';
+import UrlsLib from '../../lib/data/urls/index.mjs';
 import { getApiGatewayLambdaEvent, getApiGatewayLambdaContext } from '../../lib/test-utils/index.mjs';
 
 chai.use(chaiAsPromised);
@@ -31,7 +31,7 @@ describe('backend/handlers/api/urls.mjs', async () => {
           target: 'https://unittest',
         }],
       };
-      const stub = sandbox.stub(urlsLib, 'listUrls').resolves(expected);
+      const stub = sandbox.stub(UrlsLib, 'listUrls').resolves(expected);
       const event = getApiGatewayLambdaEvent({ method: 'GET', path: '/urls' });
       const res = await urlsHandlers.listHandler(event, getApiGatewayLambdaContext());
       expect(res.statusCode).to.equal(200);
@@ -51,7 +51,7 @@ describe('backend/handlers/api/urls.mjs', async () => {
           target: 'https://unittest',
         }],
       };
-      const stub = sandbox.stub(urlsLib, 'listUrls').resolves(expected);
+      const stub = sandbox.stub(UrlsLib, 'listUrls').resolves(expected);
       const event = getApiGatewayLambdaEvent({ method: 'GET', path: '/urls', queryStringParameters: { limit: '50' } });
       const res = await urlsHandlers.listHandler(event, getApiGatewayLambdaContext());
       expect(res.statusCode).to.equal(200);
@@ -71,7 +71,7 @@ describe('backend/handlers/api/urls.mjs', async () => {
         status: 'ACTIVE',
         target: 'https://unittest',
       };
-      const stub = sandbox.stub(urlsLib, 'createUrl').resolves(expected);
+      const stub = sandbox.stub(UrlsLib, 'createUrl').resolves(expected);
       const event = getApiGatewayLambdaEvent({
         method: 'POST',
         path: '/urls',
@@ -98,7 +98,7 @@ describe('backend/handlers/api/urls.mjs', async () => {
         status: 'ACTIVE',
         target: 'https://unittest',
       };
-      const stub = sandbox.stub(urlsLib, 'getUrl').resolves(expected);
+      const stub = sandbox.stub(UrlsLib, 'getUrl').resolves(expected);
       const event = getApiGatewayLambdaEvent({
         method: 'GET',
         path: '/urls/{urlId}',
@@ -124,7 +124,7 @@ describe('backend/handlers/api/urls.mjs', async () => {
         status: 'ACTIVE',
         target: 'https://unittest',
       };
-      const stub = sandbox.stub(urlsLib, 'putUrl').resolves(expected);
+      const stub = sandbox.stub(UrlsLib, 'putUrl').resolves(expected);
       const event = getApiGatewayLambdaEvent({
         method: 'PUT',
         path: '/urls/{urlId}',
@@ -146,7 +146,7 @@ describe('backend/handlers/api/urls.mjs', async () => {
 
   describe('deleteHandler', async () => {
     it('should delete a url', async () => {
-      const stub = sandbox.stub(urlsLib, 'deleteUrl').resolves();
+      const stub = sandbox.stub(UrlsLib, 'deleteUrl').resolves();
       const event = getApiGatewayLambdaEvent({
         method: 'DELETE',
         path: '/urls/{urlId}',

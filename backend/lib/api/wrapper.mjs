@@ -1,8 +1,11 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import apiSchemaBuilder from 'api-schema-builder';
 import * as errors from '../errors/index.mjs';
 import { logger, errorJson } from '../logger/index.mjs';
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {Record<string, string | number | boolean>} */
 const commonHeaders = {
@@ -51,7 +54,7 @@ function formatOpenapiValidationErrors(parameterErrors, bodyErrors) {
 
 /** @type {import('./wrapper.js').validateEvent} */
 export function validateEvent(event) {
-  const spec = /** @type {import('api-schema-builder').OpenapiSpec} */ (JSON.parse(fs.readFileSync(path.join(__dirname, '../../openapi.packaged.json')).toString()));
+  const spec = /** @type {import('api-schema-builder').OpenapiSpec} */ (JSON.parse(fs.readFileSync(path.join(dirname, '../../openapi.packaged.json')).toString()));
   const schema = apiSchemaBuilder.buildSchemaSync(spec);
   const [requestedMethod, requestedPath] = event.routeKey.split(' ');
   // convert /thing/{thingId} to /thing/:thingId which is what the validator will use

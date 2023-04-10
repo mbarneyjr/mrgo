@@ -64,7 +64,7 @@ lint: dependencies
 build: artifacts/backend.zip artifacts/frontend.zip
 
 test: backend/openapi.packaged.json
-	./node_modules/.bin/env-cmd -f ./.env.test ./node_modules/.bin/mocha './backend/{,!(node_modules)/**}/*.spec.js' ${TEST_ARGS}
+	./node_modules/.bin/env-cmd -f ./.env.test ./node_modules/.bin/mocha './backend/{,!(node_modules)/**}/*.spec.mjs' ${TEST_ARGS}
 coverage:
 	./node_modules/.bin/nyc $(MAKE) test
 debug:

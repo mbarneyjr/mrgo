@@ -7,7 +7,7 @@ chai.use(chaiAsPromised);
 
 const { expect } = chai;
 
-describe('backend/lib/logger/index.js', async () => {
+describe('backend/lib/logger/index.mjs', async () => {
   const sandbox = sinon.createSandbox();
   /** @type {import('sinon').SinonStub} */
   let infoStub;

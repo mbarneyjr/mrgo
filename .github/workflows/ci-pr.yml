@@ -87,6 +87,8 @@ jobs:
     container: ghcr.io/mbarneyjr/ci-docker-image:latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:

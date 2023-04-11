@@ -19,6 +19,20 @@ permissions:
   packages: read
 
 jobs:
+  get_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: version
+        name: get version
+        run: |
+          export VERSION=$(git describe)
+          echo "VERSION: ${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
   test:
     runs-on: ubuntu-latest
     container: ghcr.io/mbarneyjr/ci-docker-image:latest
@@ -57,13 +71,13 @@ jobs:
           name: ${{ env.APPLICATION_NAME }}-${{ github.run_id }}
           path: artifacts/
   create_change_set:
-    needs: package
+    needs:
+      - package
+      - get_version
     runs-on: ubuntu-latest
     container: ghcr.io/mbarneyjr/ci-docker-image:latest
     env:
-      ENVIRONMENT_NAME: prod
-      HOSTED_ZONE_NAME: mrgo.io
-      DOMAIN_NAME: mrgo.io
+      VERSION: ${{ needs.get_version.outputs.version }}
     outputs:
       no_changes: ${{ steps.create_change_set.outputs.no_changes }}
     concurrency:

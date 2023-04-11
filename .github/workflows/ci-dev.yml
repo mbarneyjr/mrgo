@@ -22,6 +22,20 @@ permissions:
   packages: read
 
 jobs:
+  get_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: version
+        name: get version
+        run: |
+          export VERSION=$(git describe)
+          echo "VERSION: ${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
   test:
     runs-on: ubuntu-latest
     container: ghcr.io/mbarneyjr/ci-docker-image:latest
@@ -60,16 +74,18 @@ jobs:
           name: ${{ env.APPLICATION_NAME }}-${{ github.run_id }}
           path: artifacts/
   deploy_dev:
-    needs: package
+    needs:
+      - package
+      - get_version
     runs-on: ubuntu-latest
     container: ghcr.io/mbarneyjr/ci-docker-image:latest
     environment: dev
     concurrency:
       group: mrgo-dev
+    env:
+      VERSION: ${{ needs.get_version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:

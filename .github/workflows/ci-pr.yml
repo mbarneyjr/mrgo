@@ -36,7 +36,7 @@ jobs:
         with:
           fetch-depth: 0
       - id: version
-        name: get short ref
+        name: get version
         run: |
           export VERSION=$(git describe)
           echo "VERSION: ${VERSION}"

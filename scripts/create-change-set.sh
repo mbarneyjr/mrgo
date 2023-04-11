@@ -2,8 +2,6 @@
 
 set -euo pipefail
 
-export VERSION=$(git describe)
-
 echo "Deploying ${STACK_NAME} with changeset ${CHANGE_SET_NAME}. Version: ${VERSION}"
 
 export STACK_STATUS=$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --query Stacks[0].StackStatus --output text 2> /dev/null || echo "NO_STACK")
@@ -13,7 +11,7 @@ aws cloudformation create-change-set \
   --parameters \
       ParameterKey=ApplicationName,ParameterValue="${APPLICATION_NAME}" \
       ParameterKey=EnvironmentName,ParameterValue="${ENVIRONMENT_NAME}" \
-      ParameterKey=Version,ParameterValue="$(git describe)" \
+      ParameterKey=Version,ParameterValue="${VERSION}" \
       ParameterKey=HostedZoneName,ParameterValue="${HOSTED_ZONE_NAME}" \
       ParameterKey=DomainName,ParameterValue="${DOMAIN_NAME}" \
   --tags \

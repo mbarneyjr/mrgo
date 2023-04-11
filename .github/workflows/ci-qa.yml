@@ -64,6 +64,8 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/mbarneyjr/ci-docker-image:latest
     environment: qa
+    concurrency:
+      group: mrgo-qa
     steps:
       - uses: actions/checkout@v3
         with:

@@ -27,6 +27,20 @@ permissions:
   packages: read
 
 jobs:
+  get_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: version
+        name: get short ref
+        run: |
+          export VERSION=$(git describe)
+          echo "VERSION: ${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
   get_short_ref:
     runs-on: ubuntu-latest
     outputs:
@@ -79,16 +93,16 @@ jobs:
   deploy_pr:
     needs:
       - package
+      - get_version
       - get_short_ref
     env:
       ENVIRONMENT_NAME: ${{ needs.get_short_ref.outputs.short_ref }}
+      VERSION: ${{ needs.get_version.outputs.version }}
       DOMAIN_NAME: ${{ needs.get_short_ref.outputs.short_ref }}.dev.mrgo.io
     runs-on: ubuntu-latest
     container: ghcr.io/mbarneyjr/ci-docker-image:latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:

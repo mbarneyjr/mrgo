@@ -2,8 +2,8 @@ name: release-qa
 
 on:
   push:
-    branches:
-      - qa
+    tags:
+      - '*'
 
 env:
   TARGET_ACCOUNT_ID: ${{ secrets.QA_ACCOUNT_ID }}

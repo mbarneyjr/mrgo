@@ -101,6 +101,8 @@ jobs:
       DOMAIN_NAME: ${{ needs.get_short_ref.outputs.short_ref }}.dev.mrgo.io
     runs-on: ubuntu-latest
     container: ghcr.io/mbarneyjr/ci-docker-image:latest
+    concurrency:
+      group: mrgo-${{ needs.get_short_ref.outputs.short_ref }}
     steps:
       - uses: actions/checkout@v3
       - name: Download artifacts

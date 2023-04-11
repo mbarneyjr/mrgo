@@ -1,3 +1,3 @@
-import { UrlUpdateRequest } from '../../../../src/lib/data/urls/index';
+import { UrlUpdateRequest } from '../../../../backend/lib/data/urls/index';
 
 interface UpdateUrlFormRequest extends UrlUpdateRequest {}

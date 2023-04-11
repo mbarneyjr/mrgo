@@ -5,9 +5,9 @@ export const ELEMENT_NAME = 'url-list';
 
 /** @type {import('@enhance/types').EnhanceElemFn} */
 export function element({ html, state }) {
-  /** @type {import('../../src/lib/data/urls/index.js').Url[]} */
+  /** @type {import('../../backend/lib/data/urls/index.js').Url[]} */
   const error = state.store?.error ?? '';
-  const urlList = /** @type {Array<import('../../src/lib/data/urls/index.js').Url>} */ (state.store?.urls ?? []);
+  const urlList = /** @type {Array<import('../../backend/lib/data/urls/index.js').Url>} */ (state.store?.urls ?? []);
   const forwardPaginationToken = state.store?.forwardPaginationToken ?? undefined;
   const backwardPaginationToken = state.store?.backwardPaginationToken ?? undefined;
 

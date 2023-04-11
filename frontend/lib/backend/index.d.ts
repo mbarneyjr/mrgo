@@ -1,4 +1,4 @@
-import { ApiErrorResponseBody } from '../../../src/lib/api/wrapper';
+import { ApiErrorResponseBody } from '../../../backend/lib/api/wrapper';
 
 export interface ErrorResponse {
   message: string

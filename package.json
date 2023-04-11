@@ -2,6 +2,7 @@
   "name": "mrgo",
   "version": "0.0.0",
   "devDependencies": {
+    "@enhance/types": "^0.6.0",
     "@total-typescript/ts-reset": "^0.4.2",
     "@types/aws-lambda": "^8.10.114",
     "@types/axios": "^0.14.0",
@@ -18,32 +19,34 @@
     "@types/sinon": "^10.0.13",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
     "axios": "^0.27.2",
+    "c8": "^7.13.0",
     "cfn-changeset-viewer": "^0.0.3",
     "cfn-event-tailer": "^0.0.2",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
+    "connect-livereload": "^0.6.1",
     "dotenv": "^16.0.3",
     "env-cmd": "^10.1.0",
     "eslint": "^8.12.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.25.4",
     "express": "^4.18.2",
+    "livereload": "^0.9.3",
     "mocha": "^9.2.2",
     "nodemon": "^2.0.20",
-    "nyc": "^15.1.0",
     "sinon": "^15.0.1",
     "typescript": "^4.9.3"
   },
-  "nyc": {
+  "c8": {
     "check-coverage": true,
     "all": true,
     "include": [
-      "src/**/*.js"
+      "backend/**/*.mjs"
     ],
     "exclude": [
       "**/*/test-utils/**/*",
-      "**/*.spec.js",
-      "**/*.test.js",
+      "**/*.spec.*js",
+      "**/*.test.*js",
       "**/*.local.*"
     ],
     "reporter": [

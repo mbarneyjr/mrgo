@@ -10,6 +10,7 @@ export const handler = apiWrapper(async (event) => {
   const spec = JSON.parse(readFileSync(path.join(dirname, '../../openapi.packaged.json')).toString());
 
   spec.info.title = `${process.env.APPLICATION_NAME}-${process.env.ENVIRONMENT_NAME}`;
+  spec.info.version = `${process.env.VERSION}`;
 
   if (queryStringParameters.format === 'json') {
     return spec;

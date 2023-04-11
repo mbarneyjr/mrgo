@@ -8,6 +8,9 @@ Parameters:
   EnvironmentName:
     Type: String
     Description: The environment in which the stack will be deployed
+  Version:
+    Type: String
+    Description: The version of the application being deployed
   HostedZoneName:
     Type: String
     Description: The name of the hosted zone where DNS should be placed
@@ -49,6 +52,7 @@ Resources:
       Parameters:
         ApplicationName: !Ref ApplicationName
         EnvironmentName: !Ref EnvironmentName
+        Version: !Ref Version
         HostedZoneName: !Ref HostedZoneName
         CertificateArn: !GetAtt Cert.Outputs.CertificateArn
         DomainName: !Ref DomainName
@@ -63,6 +67,7 @@ Resources:
       Parameters:
         ApplicationName: !Ref ApplicationName
         EnvironmentName: !Ref EnvironmentName
+        Version: !Ref Version
         HostedZoneName: !Ref HostedZoneName
         DomainName: !Ref DomainName
         CertificateArn: !GetAtt Cert.Outputs.CertificateArn

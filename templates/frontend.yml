@@ -9,6 +9,9 @@ Parameters:
   EnvironmentName:
     Type: String
     Description: The environment in which the stack will be deployed
+  Version:
+    Type: String
+    Description: The version of the application being deployed
   HostedZoneName:
     Type: String
     Description: The name of the hosted zone where DNS should be placed
@@ -40,6 +43,7 @@ Globals:
       Variables:
         APPLICATION_NAME: !Ref ApplicationName
         ENVIRONMENT_NAME: !Ref EnvironmentName
+        VERSION: !Ref Version
         API_ENDPOINT: !Ref ApiEndpoint
         APP_ENDPOINT: !Sub https://${DomainName}
         APP_CLIENT_ID: !Ref AuthAppClientId
@@ -146,7 +150,7 @@ Resources:
         info:
           title: !Sub ${ApplicationName}-${EnvironmentName}-frontend
           description: Serverless API
-          version: '1.0'
+          version: !Ref Version
         paths:
           /:
             parameters:

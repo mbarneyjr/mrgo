@@ -9,6 +9,9 @@ Parameters:
   EnvironmentName:
     Type: String
     Description: The environment in which the stack will be deployed
+  Version:
+    Type: String
+    Description: The version of the application being deployed
   HostedZoneName:
     Type: String
     Description: The name of the hosted zone where DNS should be placed
@@ -43,6 +46,7 @@ Globals:
       Variables:
         APPLICATION_NAME: !Ref ApplicationName
         ENVIRONMENT_NAME: !Ref EnvironmentName
+        VERSION: !Ref Version
         TABLE_NAME: !Ref TableName
 
 
@@ -207,8 +211,8 @@ Resources:
         openapi: '3.0.1'
         info:
           title: !Sub ${ApplicationName}-${EnvironmentName}-api
-          description: Serverless API
-          version: '1.0'
+          description: MrGo API
+          version: !Ref Version
         paths:
           /docs:
             get:

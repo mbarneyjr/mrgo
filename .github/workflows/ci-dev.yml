@@ -3,7 +3,7 @@ name: release-dev
 on:
   push:
     branches:
-      - dev
+      - main
 
 env:
   TARGET_ACCOUNT_ID: ${{ secrets.DEV_ACCOUNT_ID }}

@@ -11,6 +11,7 @@ aws cloudformation create-change-set \
   --parameters \
       ParameterKey=ApplicationName,ParameterValue="${APPLICATION_NAME}" \
       ParameterKey=EnvironmentName,ParameterValue="${ENVIRONMENT_NAME}" \
+      ParameterKey=Version,ParameterValue="$(git describe)" \
       ParameterKey=HostedZoneName,ParameterValue="${HOSTED_ZONE_NAME}" \
       ParameterKey=DomainName,ParameterValue="${DOMAIN_NAME}" \
   --tags \

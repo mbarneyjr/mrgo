@@ -2,7 +2,9 @@
 
 set -euo pipefail
 
-echo "Deploying ${STACK_NAME} with changeset ${CHANGE_SET_NAME}"
+export VERSION=$(git describe)
+
+echo "Deploying ${STACK_NAME} with changeset ${CHANGE_SET_NAME}. Version: ${VERSION}"
 
 export STACK_STATUS=$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --query Stacks[0].StackStatus --output text 2> /dev/null || echo "NO_STACK")
 aws cloudformation create-change-set \

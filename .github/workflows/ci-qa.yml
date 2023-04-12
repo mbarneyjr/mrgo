@@ -33,7 +33,7 @@ jobs:
       - id: version
         name: get version
         run: |
-          export VERSION=$(git describe)
+          export VERSION=$(git describe --tags)
           echo "VERSION: ${VERSION}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
   test:

@@ -9,7 +9,6 @@ env:
   ARTIFACT_BUCKET: ci-artifacts-${{ secrets.DEVOPS_ACCOUNT_ID }}-us-east-2
   ARTIFACT_PREFIX: mrgo
   CHANGE_SET_NAME: release-${{ github.run_number }}-${{ github.run_attempt }}
-  CHANGE_SET_DESCRIPTION: ${{ github.event.head_commit.message }}
   HOSTED_ZONE_NAME: mrgo.io
   DOMAIN_NAME: mrgo.io
 
@@ -78,6 +77,7 @@ jobs:
     container: ghcr.io/mbarneyjr/ci-docker-image:latest
     env:
       VERSION: ${{ needs.get_version.outputs.version }}
+      CHANGE_SET_DESCRIPTION: ${{ needs.get_version.outputs.version }}
     outputs:
       no_changes: ${{ steps.create_change_set.outputs.no_changes }}
     concurrency:

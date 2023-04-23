@@ -1,12 +1,7 @@
 import { config } from '../lib/config/index.mjs';
 
-/**
- * @param {import('aws-lambda').APIGatewayProxyEventV2} _
- * @param {*} state
- * @returns string
- */
-
 /* eslint-disable-next-line no-unused-vars */
+/** @type {import('./index.js').Head} */
 export default function Head(_, state) {
   const title = state?.head?.title
     ? `${state.head.title} - Mr. Go`

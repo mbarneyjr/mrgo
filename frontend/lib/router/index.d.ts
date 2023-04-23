@@ -1,9 +1,16 @@
 import { APIGatewayProxyEventV2 } from '@types/aws-lambda';
 import { Session } from '../session';
 
+export interface StateBase extends Record<string, unknown> {
+  head: {
+    title?: string
+    description?: string
+  }
+}
+
 export interface RenderResult {
   body?: string
-  state?: object
+  state?: StateBase
   session: Session
   headers?: Record<string, string>
   isBase64Decoded?: boolean
@@ -19,3 +26,4 @@ export interface Route {
 
 export function addRoute(method: string, path: string, handler: RenderFunction): void
 export function getRoute(method: string, path: string): Route | null
+export function routerHandler(event: APIGatewayProxyEventV2, session: Session): Promise<RenderResult>

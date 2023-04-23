@@ -9,6 +9,8 @@ export interface Log extends LogContext {
   data?: LogData
 }
 
+export function getLogLevel(input: string | undefined): number
+
 export function log(level: LogLevel, message: string, data?: LogData): Log
 
 export type LoggerFunction = (message: string, data?: LogData) => Log;

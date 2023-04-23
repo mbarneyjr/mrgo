@@ -38,10 +38,7 @@ const getUrlHandler = authMiddleware(async (event, session) => {
   };
 });
 
-/**
- * @param {string} body
- * @returns {import('./index.js').UpdateUrlFormRequest}
- */
+/** @type {import('./index.js').parsePostUrlsBody} */
 function parsePostUrlsBody(body) {
   try {
     return JSON.parse(body);

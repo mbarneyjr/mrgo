@@ -4,11 +4,14 @@ import { readFileSync } from 'fs';
 import { decode } from 'querystring';
 import authMiddleware from '../../lib/middleware/auth/index.mjs';
 import { createUrl, deleteUrl, getUrls } from '../../lib/backend/index.mjs';
+import { logger } from '../../../backend/lib/logger/index.mjs';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('../../lib/router/index.js').RenderFunction} */
 const getUrlsHandler = authMiddleware(async (event, session) => {
+  logger.debug('HERE');
+
   const response = await getUrls(event.queryStringParameters?.paginationToken, session);
 
   /** @type {string[]} */
@@ -39,10 +42,7 @@ const getUrlsHandler = authMiddleware(async (event, session) => {
   };
 });
 
-/**
- * @param {string} body
- * @returns {import('./index.js').CreateUrlFormRequest | import('./index.js').DeleteUrlFormRequest}
- */
+/** @type {import('./index.js').parsePostUrlsBody} */
 function parsePostUrlsBody(body) {
   try {
     return JSON.parse(body);

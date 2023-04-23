@@ -3,10 +3,7 @@ import fetch from 'node-fetch';
 import { config } from '../config/index.mjs';
 import { logger } from '../logger/index.mjs';
 
-/**
- * @param {string} urlId
- * @returns {Promise<import('./index.js').DataOrError<import('../../../backend/lib/data/urls/index.js').Url>>}
- */
+/** @type {import('./index.js').getUrl} */
 export async function getUrl(urlId) {
   const response = await fetch(`${config.apiEndpoint}/urls/${urlId}`);
   const body = /** @type {import('../../../backend/lib/data/urls/index.js').Url} */ (await response.json());
@@ -20,11 +17,7 @@ export async function getUrl(urlId) {
   };
 }
 
-/**
- * @param {string | undefined} paginationToken
- * @param {import('../../lib/middleware/auth/index.js').LoggedInSession} session
- * @returns {Promise<import('./index.js').DataOrError<import('../../../backend/lib/data/urls/index.js').UrlListResponse>>}
- */
+/** @type {import('./index.js').getUrls} */
 export async function getUrls(paginationToken, session) {
   logger.debug('getting urls', { paginationToken });
   /** @type {Record<string, string>} */
@@ -57,12 +50,7 @@ export async function getUrls(paginationToken, session) {
   };
 }
 
-/**
- * @param {string} urlId
- * @param {import('../../../backend/lib/data/urls/index.js').UrlUpdateRequest} updateRequest
- * @param {import('../../lib/middleware/auth/index.js').LoggedInSession} session
- * @returns {Promise<import('./index.js').DataOrError<import('../../../backend/lib/data/urls/index.js').Url>>}
- */
+/** @type {import('./index.js').updateUrl} */
 export async function updateUrl(urlId, updateRequest, session) {
   const response = await fetch(`${config.apiEndpoint}/urls/${urlId}`, {
     method: 'PUT',
@@ -81,11 +69,7 @@ export async function updateUrl(urlId, updateRequest, session) {
   };
 }
 
-/**
- * @param {import('../../../backend/lib/data/urls/index.js').UrlCreateRequest} urlCreateRequest
- * @param {import('../../lib/middleware/auth/index.js').LoggedInSession} session
- * @returns {Promise<import('./index.js').DataOrError<import('../../../backend/lib/data/urls/index.js').UrlCreateResponse>>}
- */
+/** @type {import('./index.js').createUrl} */
 export async function createUrl(urlCreateRequest, session) {
   const response = await fetch(`${config.apiEndpoint}/urls`, {
     method: 'POST',
@@ -109,11 +93,7 @@ export async function createUrl(urlCreateRequest, session) {
   };
 }
 
-/**
- * @param {string} urlId
- * @param {import('../../lib/middleware/auth/index.js').LoggedInSession} session
- * @returns {Promise<void>}
- */
+/** @type {import('./index.js').deleteUrl} */
 export async function deleteUrl(urlId, session) {
   await fetch(`${config.apiEndpoint}/urls/${urlId}`, {
     method: 'DELETE',

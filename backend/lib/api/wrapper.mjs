@@ -12,10 +12,7 @@ const commonHeaders = {
   'Access-Control-Allow-Origin': '*',
 };
 
-/**
- * @param {import('aws-lambda').APIGatewayProxyEventV2WithJWTAuthorizer} event
- * @returns {Promise<import('./wrapper.js').WrappedEvent>}
- */
+/** @type {import('./wrapper.js').parseEvent} */
 async function parseEvent(event) {
   const parsedEvent = structuredClone(event);
   if (parsedEvent.body !== undefined) {

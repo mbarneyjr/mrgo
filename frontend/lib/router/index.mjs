@@ -16,7 +16,7 @@ import { errorJson, logger } from '../logger/index.mjs';
 const router = new Router();
 
 /** @type {import('./index.js').addRoute} */
-function addRoute(method, path, handler) {
+export function addRoute(method, path, handler) {
   const store = router.register(path);
   store[method] = handler;
 }
@@ -45,12 +45,8 @@ addRoute('GET', '/oauth2/idresponse', oauth2Handler);
 addRoute('GET', '/login', loginHandler);
 addRoute('GET', '/logout', logoutHandler);
 
-/**
- * @param {import('aws-lambda').APIGatewayProxyEventV2} event
- * @param {import('../session/index.js').Session} session
- * @returns {Promise<import('./index.js').RenderResult>}
- */
-export default async function routerHandler(event, session) {
+/** @type {import('./index.js').routerHandler} */
+export async function routerHandler(event, session) {
   const route = getRoute(event.requestContext.http.method, event.rawPath);
   if (!route) return notFoundPage(event, session);
 

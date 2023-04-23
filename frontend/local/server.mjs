@@ -17,7 +17,7 @@ liveReloadServer.server.once('connection', () => {
 app.use(connectLivereload());
 app.set('query parser', 'simple');
 app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+app.use(express.json({ strict: false }));
 app.disable('etag');
 
 const port = 3000;

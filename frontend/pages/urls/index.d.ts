@@ -8,3 +8,5 @@ interface DeleteUrlFormRequest {
   method: 'delete'
   id: string
 }
+
+export function parsePostUrlsBody(body: string): CreateUrlFormRequest | DeleteUrlFormRequest

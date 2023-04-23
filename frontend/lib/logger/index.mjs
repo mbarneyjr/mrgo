@@ -1,7 +1,4 @@
-/**
- * @param {string | undefined} input
- * @returns {number}
- */
+/** @type {import('./index.js').getLogLevel} */
 function getLogLevel(input) {
   /** @type {Record<import('./index.js').LogLevel, number>} */
   const logLevelMap = {

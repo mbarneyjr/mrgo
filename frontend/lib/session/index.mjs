@@ -6,10 +6,7 @@ export const ENC = 'A128GCM';
 export const SESSION_KEY = process.env.SESSION_KEY ?? Buffer.from('1234567890123456').toString('base64');
 export const WEEK = 604800;
 
-/**
- * @param {Array<string> | undefined} cookies
- * @returns {Promise<import('./index.js').Session>}
- */
+/** @type {import('./index.js').parseSession} */
 export async function parseSession(cookies) {
   /** @type {import('./index.js').Session} */
   const session = {};
@@ -28,10 +25,7 @@ export async function parseSession(cookies) {
   return session;
 }
 
-/**
- * @param {import('./index.js').Session} session
- * @returns {Promise<Array<string>>}
- */
+/** @type {import('./index.js').writeSession} */
 export async function writeSession(session) {
   return Object.entries(session ?? {}).filter((entry) => entry[1] !== undefined).map(([key, value]) => {
     const generated = jwt.generate(ALG, ENC, { value }, SESSION_KEY);

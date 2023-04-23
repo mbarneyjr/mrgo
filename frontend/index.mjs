@@ -2,7 +2,7 @@ import enhance from '@enhance/ssr';
 
 import elements from './elements/index.mjs';
 
-import routerHandler from './lib/router/index.mjs';
+import { routerHandler } from './lib/router/index.mjs';
 import head from './head/index.mjs';
 import { parseSession, writeSession } from './lib/session/index.mjs';
 import { logger } from './lib/logger/index.mjs';

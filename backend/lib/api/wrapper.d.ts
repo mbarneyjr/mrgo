@@ -42,5 +42,6 @@ export type UnrappedResponse = APIGatewayProxyResultV2 | string | number | boole
 export type UnwrappedHandler = (event: WrappedEvent, context: Context) => Promise<UnrappedResponse>
 export type LambdaHandler = (event: APIGatewayProxyEventV2WithJWTAuthorizer, context: Context) => Promise<APIGatewayProxyStructuredResultV2>
 
+export async function parseEvent(event: APIGatewayProxyEventV2WithJWTAuthorizer): Promise<WrappedEvent>
 export function validateEvent(event: WrappedEvent): void
 export function apiWrapper(handlerFunction: UnwrappedHandler, options?: ApiWrapperOptions): LambdaHandler

@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
-import { mimeTypes } from './mime-types.mjs';
+import { mimeTypes } from '../lib/mime-types/index.mjs';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 

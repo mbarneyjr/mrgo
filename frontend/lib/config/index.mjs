@@ -1,15 +1,7 @@
-if (!process.env.APP_CLIENT_ID) {
-  throw new Error('APP_CLIENT_ID is not defined');
-}
-if (!process.env.AUTH_BASE_URL) {
-  throw new Error('AUTH_BASE_URL is not defined');
-}
-if (!process.env.API_ENDPOINT) {
-  throw new Error('API_ENDPOINT is not defined');
-}
-if (!process.env.APP_ENDPOINT) {
-  throw new Error('APP_ENDPOINT is not defined');
-}
+if (!process.env.APP_CLIENT_ID) throw new Error('APP_CLIENT_ID is not defined');
+if (!process.env.AUTH_BASE_URL) throw new Error('AUTH_BASE_URL is not defined');
+if (!process.env.API_ENDPOINT) throw new Error('API_ENDPOINT is not defined');
+if (!process.env.APP_ENDPOINT) throw new Error('APP_ENDPOINT is not defined');
 
 export const config = {
   auth: {

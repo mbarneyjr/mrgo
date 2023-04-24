@@ -1,5 +1,5 @@
 /** @type {import('../../lib/router/index.js').RenderFunction} */
-export default async function render(event, session) {
+export default async function render(_, session) {
   return {
     headers: {
       location: '/',

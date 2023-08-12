@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 import { decode } from 'querystring';
 import authMiddleware from '../../lib/middleware/auth/index.mjs';
 import { createUrl, deleteUrl, getUrls } from '../../lib/backend/index.mjs';
-import { logger } from '../../../backend/lib/logger/index.mjs';
+import { logger } from '../../lib/logger/index.mjs';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 

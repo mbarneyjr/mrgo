@@ -9,38 +9,43 @@ export function element({ html, state }) {
   const currentPath = state.store?.path;
   const isAuthenticated = state.store?.session?.idToken && state.store?.session?.accessToken && state.store?.session?.refreshToken;
   const authLink = isAuthenticated
-    ? /* html */ `<a class="${ELEMENT_NAME}-link" href="/logout">Log Out</a>`
-    : /* html */ `<a class="${ELEMENT_NAME}-link" href="/login">Log In</a>`;
+    ? /* html */ `<a class="link" href="/logout">Log Out</a>`
+    : /* html */ `<a class="link" href="/login">Log In</a>`;
   return html`
     <style>
-      .${ELEMENT_NAME}-nav {
-        width: 100%;
+      nav-bar {
         display: flex;
-        flex-wrap: wrap;
         background-color: ${config.colors.nav.normal};
+        width: 100%;
       }
-      .${ELEMENT_NAME}-link {
-        all: unset;
-        cursor: pointer;
+
+      nav-bar a,
+      nav-bar::part(toggle) {
         padding: 1rem;
-        flex-basis: auto;
         background-color: ${config.colors.nav.normal};
         color: ${config.colors.background.light};
+        text-decoration: none;
       }
-      .${ELEMENT_NAME}-link:hover {
+      nav-bar::part(toggle-line) {
+        background-color: ${config.colors.background.light};
+      }
+
+      nav-bar .link:hover {
         background-color: ${config.colors.nav.heavy};
         color: ${config.colors.background.light};
       }
-      .${ELEMENT_NAME}-active-nav {
+
+      nav-bar .link.active {
         background-color: ${config.colors.background.light};
         color: ${config.colors.nav.normal};
       }
     </style>
-    <nav id="navigation" class="${ELEMENT_NAME}-nav">
-      <a class="${ELEMENT_NAME}-link ${currentPath === '/' ? `${ELEMENT_NAME}-active-nav` : ''}" href="/">Go Home</a>
-      <a class="${ELEMENT_NAME}-link ${currentPath.includes('/urls') ? `${ELEMENT_NAME}-active-nav` : ''}" href="/urls">View URLs</a>
-      <a class="${ELEMENT_NAME}-link ${currentPath.includes('/create-url') ? `${ELEMENT_NAME}-active-nav` : ''}" href="/create-url">Create URL</a>
+    <nav-bar breakpoint="512px">
+      <a href="/" slot="title">Mr. Go</a>
+      <a class="link ${currentPath === '/' ? 'active' : ''}" href="/">Go Home</a>
+      <a class="link ${currentPath === '/urls' ? 'active' : ''}" href="/urls">View URLs</a>
+      <a class="link ${currentPath === '/create-url' ? 'active' : ''}" href="/create-url">Create URL</a>
       ${authLink}
-    </nav>
+    </nav-bar>
   `;
 }

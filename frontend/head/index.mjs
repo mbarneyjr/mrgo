@@ -29,6 +29,7 @@ export default function Head(_, state) {
       <meta name="description" content="${description}">
       <title>${title}</title>
       <link rel="icon" href="/static/favicon.ico">
+      <script src="https://mbarney.me/public/components/nav-bar/index.mjs" defer></script>
       ${devHtml}
       <style>
         :root {
@@ -38,6 +39,10 @@ export default function Head(_, state) {
           margin: 0;
           font-family: 'Arial';
           background-color: ${config.colors.background.light};
+        }
+        nav-bar::part(navbar) {
+          max-width: 1024px;
+          margin: auto;
         }
         .reset {
           all: unset;

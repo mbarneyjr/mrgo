@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "mrgo",
+  "version": "0.0.1",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {},
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
+    "@types/node": "^22.15.30",
+    "prettier": "^3.5.3",
+    "sort-package-json": "^3.2.1",
+    "typescript": "^5.9.2"
+  }
+}

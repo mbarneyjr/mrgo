@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@mrgo/lambda",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "types": "tsc"
+  },
+  "dependencies": {
+    "@mrgo/api": "^0.0.0",
+    "hono": "^4.9.6"
+  }
+}

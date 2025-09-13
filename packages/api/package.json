@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@mrgo/api",
+  "version": "0.0.0",
+  "type": "module",
+  "imports": {
+    "#*.ts": "./*.ts"
+  },
+  "exports": {
+    ".": {
+      "import": "./src/api.ts"
+    },
+    "./*": {
+      "import": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "local-server": "node local/server.ts",
+    "types": "tsc"
+  },
+  "dependencies": {
+    "@hono/swagger-ui": "^0.5.2",
+    "@hono/zod-openapi": "^1.1.0",
+    "@mrgo/core": "^0.0.0",
+    "hono": "^4.9.6",
+    "zod": "^4.1.8"
+  },
+  "devDependencies": {
+    "@hono/node-server": "^1.19.2"
+  }
+}

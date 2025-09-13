@@ -21,13 +21,23 @@
       perSystem =
         { self', pkgs, ... }:
         {
+          packages.mrgo = import ./nix/mrgo.nix { inherit pkgs; };
+          packages.mrgo-dev = import ./nix/mrgo.nix {
+            inherit pkgs;
+            dev = true;
+          };
+          packages.lambda = import ./packages/lambda { inherit pkgs; };
           devShells.default = pkgs.mkShell {
             packages = [
+              (pkgs.writeShellScriptBin "lint" "./scripts/dev/lint.sh")
+              (pkgs.writeShellScriptBin "format" "./scripts/dev/format.sh")
               pkgs.nodejs_22
               pkgs.awscli2
               pkgs.aws-sam-cli
               pkgs.jq
               pkgs.yq
+              pkgs.shellcheck
+              pkgs.zip
             ];
           };
         };

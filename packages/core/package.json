@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@mrgo/core",
+  "version": "0.0.0",
+  "type": "module",
+  "imports": {
+    "#*.ts": "./*.ts"
+  },
+  "exports": {
+    "./*": {
+      "import": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "drizzle:drop": "drizzle-kit drop",
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:migrate": "drizzle-kit migrate",
+    "drizzle:studio": "drizzle-kit studio",
+    "types": "tsc"
+  },
+  "dependencies": {
+    "@types/pg": "^8.15.5",
+    "drizzle-orm": "^0.44.5",
+    "pg": "^8.16.3",
+    "zod": "^4.1.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.1",
+    "drizzle-kit": "^0.31.4"
+  }
+}

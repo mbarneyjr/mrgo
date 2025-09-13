@@ -1,5 +1,11 @@
 # Decisions
 
+## Use Services Flake for Spinning up a Local Development Environment
+
+Services-Flake will be used to facilitate the ability to run the entire app
+locally. A single command should be used to spin up a local database, database
+migrations, the API, and every other component that is used to run the app.
+
 ## Support Shared Resources
 
 Personal and ephemeral development environments should have the ability to share

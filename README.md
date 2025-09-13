@@ -19,6 +19,22 @@ nix develop
 echo "use flake" > .envrc
 ```
 
+The project uses `services-flake` and `process-compose` to manage local development services:
+
+```bash
+# Run the app locally
+nix run .#dev
+```
+
+This command will:
+
+1. Start a PostgreSQL database on port 5432
+2. Run database migrations automatically
+3. Start Drizzle Studio (https://local.drizzle.studio)
+4. Start the API server on port 3000
+
+Services that need filesystem access will do so in the `data.local/` directory
+
 ### Development Scripts
 
 Development workflow scripts are available in the Nix shell:
@@ -33,6 +49,7 @@ deploy # deploy infrastructure
 
 - `nix/`: nix overlays, modules, and service definitions
   - `mrgo.nix`: main application nix derivation
+  - `services.nix`: local development services configuration
 - `packages/`: application source code
   - `api/`: rest api
   - `core/`: shared business logic and database schemas

@@ -1,5 +1,24 @@
 # Decisions
 
+## Use GitHub Actions for CI/CD
+
+GitHub Actions will be used for CI/CD. The app code is already maintained in
+GitHub, so GitHub Actions is the default choice.
+
+CI/CD should be built to facilitate a build-once, deploy-many pattern. Every
+commit should be built and tested, which happens as its own pipeline. Then, the
+deployment pipelines can be triggered from that build workflow. The `dev`
+workflow will be triggered from all builds from the `main` branch. The `qa`
+workflow will be triggered from all builds from tags matching a semver version.
+The `prod` workflow will be manually triggered, specifying a tag. All deploy
+workflows will reference the previously-built artifact, and not rebuild the app.
+
+For ephemeral environments, a separate workflow will be used to deploy based on
+GitHub Pull Requests. To configure an ephemeral environment, such as specifying
+to use a shared `dev` database environment, GitHub PR labels will be used. When
+a PR is merged, a cleanup workflow will be triggered that's responsible for
+deleting the deployed ephemeral environment.
+
 ## Use Services Flake for Spinning up a Local Development Environment
 
 Services-Flake will be used to facilitate the ability to run the entire app

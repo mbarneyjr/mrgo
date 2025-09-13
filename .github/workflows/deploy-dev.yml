@@ -1,0 +1,51 @@
+name: deploy-dev
+run-name: 'deploy-dev: ${{ github.event.workflow_run.head_commit.message }}'
+
+on:
+  workflow_run:
+    types:
+      - completed
+    branches:
+      - main
+    workflows:
+      - build
+
+permissions:
+  id-token: write
+  contents: write
+  packages: read
+  actions: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    concurrency: deploy-dev
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: result
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: assume role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-2
+          role-to-assume: arn:aws:iam::533267179197:role/github-actions
+          role-session-name: GitHubActions-${{ github.run_id }}
+      - name: deploy
+        # shell: nix develop --command bash -e {0}
+        run: |
+          source ./scripts/utils/load-config.sh dev
+          ./scripts/utils/plan.sh dev database
+          ./scripts/utils/apply.sh dev database
+          ./scripts/utils/plan.sh dev api
+          ./scripts/utils/apply.sh dev api

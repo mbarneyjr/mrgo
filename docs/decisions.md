@@ -1,5 +1,65 @@
 # Decisions
 
+## Support Shared Resources
+
+Personal and ephemeral development environments should have the ability to share
+infrastructure components. For example, a developer's personal development
+environment should be able to use the main development environment's database
+instead of requiring that every personal and ephemeral development environment
+instantiate the full stack for the application.
+
+This will be facilitated by specifying the `${COMPONENT_NAME}_ENVIRONMENT_NAME`
+environment variable when running the deploy script. For instance, to deploy
+an environment but utilize the `dev` environment's database, the following
+command would be used:
+
+```sh
+$ DATABASE_ENVIRONMENT_NAME=dev deploy
+```
+
+There will be a dependency grpah for all of the infrastructure components. For
+instance, a `frontend` will depend on an `api` component, which depends on the
+`auth` and `database` components. If you deploy a new environment, but specify
+the `API_ENVIRONMENT_NAME` variable to use the dev environment's `api`, the
+environment will not create its own `api`, or any component the `api` depends
+on, such as the `database` or `auth` components.
+
+## Manage Deployment Configuration Within the Repository
+
+Configuration files will be used to manage the configuration of the deployment
+process. Since the Infrastructure-as-Code tool is CloudFormation, configuration
+will take the form of CloudFormation parameters and stack tags. A `.env` file
+will be used to manage global configuration options. For environment-specific
+configuration, `.env.${ENVIRONMENT_NAME}` files will be used. This will apply
+within the `infra/` directory for all component deployments and within the
+`infra/${COMPONENT_NAME}/` directory for component-specific configuration.
+
+Sane defaults should be used for most if not all configuration options. It
+should be pretty easy for anyone to clone this repo and immediately deploy
+to a personal development environment without configuring an environment file.
+
+## Support Local Deployment
+
+A deployment script will be created that facilitates an easy local deployment
+process. This will take the form of another bash script, accessible from the
+Nix dev shell. It's important to be able to deploy locally and not be heavily
+reliant on CI for personal/ephemeral development environments.
+
+## Use CloudFormation for Infrastructure-as-Code
+
+CloudFormation will be used as the primary Infrastructure-as-Code tool. CFN is
+chosen primarily because it is the most portable and reproducible tool. Each
+template can be deployed without requiring the use of another tool, framework,
+or environment. A template that works now will also continue to work in the
+future. With tools like `cfn-lint` and `cfn-lsp-extra`, a lot of the benefits
+of something like CDK/SST can be realized, without many of the design quirks.
+
+All IaC will be maintained within the `infra/` directory. Each infrastructure
+component will be maintained in an `infra/${COMPONENT_NAME}` directory, such
+as the `infra/api/` and `infra/database/` directories.
+
+`cfn-lint` will be used as the linter for all CloudFormation templates.
+
 ## Use Hono for the API Framework
 
 Hono will be used as the framework for the API. Hono's Zod OpenAPI middleware

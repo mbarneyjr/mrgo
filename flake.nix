@@ -27,12 +27,23 @@
             dev = true;
           };
           packages.lambda = import ./packages/lambda { inherit pkgs; };
+          process-compose.dev = {
+            _module.args = {
+              flake-pkgs = self'.packages;
+            };
+            imports = [
+              inputs.services-flake.processComposeModules.default
+              ./nix/services.nix
+            ];
+          };
           devShells.default = pkgs.mkShell {
             packages = [
               (pkgs.writeShellScriptBin "lint" "./scripts/dev/lint.sh")
               (pkgs.writeShellScriptBin "format" "./scripts/dev/format.sh")
+              (pkgs.writeShellScriptBin "deploy" "./scripts/local/deploy.sh \${@}")
               pkgs.nodejs_22
               pkgs.awscli2
+              pkgs.python3Packages.cfn-lint
               pkgs.aws-sam-cli
               pkgs.jq
               pkgs.yq

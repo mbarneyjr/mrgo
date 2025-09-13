@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The application name that is being deployed
+  EnvironmentName:
+    Type: String
+    Description: The environment in which the stack will be deployed
+  DatabaseEnvironmentName:
+    Type: String
+    Description: The environment name for the database
+
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs22.x
+    CodeUri: ../../result/lambda.zip
+    Environment:
+      Variables:
+        DATABASE_ENDPOINT: !GetAtt ConfigDatabaseEndpoint.Value
+
+
+Resources:
+  ApiLogs:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/vendedlogs/apigateway/${ApplicationName}-${EnvironmentName}-api
+
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: !Sub ${ApplicationName}-${EnvironmentName}-api
+      AccessLogSettings:
+        DestinationArn: !GetAtt ApiLogs.Arn
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength", "errorResponseType":"$context.error.responseType", "message":"$context.error.message", "integrationErrorMessage":"$context.integrationErrorMessage", "authorizerError":"$context.authorizer.error" }'
+
+  ApiFunctionLogs:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ApplicationName}-${EnvironmentName}-api
+
+  ApiFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ApplicationName}-${EnvironmentName}-api-function
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${ApplicationName}-${EnvironmentName}-api
+      Handler: packages/lambda/src/entrypoint.handler
+      Role: !GetAtt ApiFunctionRole.Arn
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Path: /{proxy+}
+            Method: ANY
+  ApiDomainSsm:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/env/API_ENDPOINT
+      Value: !Sub ${Api}.execute-api.${AWS::Region}.amazonaws.com
+
+  ConfigDatabaseEndpoint:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/env/DATABASE_ENDPOINT
+      Value: !Sub '{{resolve:ssm:/${ApplicationName}/${DatabaseEnvironmentName}/database/cluster-endpoint}}'
+
+
+Outputs:
+  ApiDomain:
+    Value: !GetAtt ApiDomainSsm.Value

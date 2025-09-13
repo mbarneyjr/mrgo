@@ -10,6 +10,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",
     "@types/node": "^22.15.30",
+    "cfn-changeset-viewer": "^0.3.3",
     "prettier": "^3.5.3",
     "sort-package-json": "^3.2.1",
     "typescript": "^5.9.2"

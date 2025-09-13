@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The application name that is being deployed
+  EnvironmentName:
+    Type: String
+    Description: The environment in which the stack will be deployed
+
+
+Resources:
+  Database:
+    Type: AWS::DSQL::Cluster
+    Properties:
+      DeletionProtectionEnabled: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${ApplicationName}-${EnvironmentName}-data
+  DatabaseClusterIdEnvSsm:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/database/cluster-id
+      Value: !Ref Database
+  DatabaseClusterEndpointEnvSsm:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Name: !Sub /${ApplicationName}/${EnvironmentName}/database/cluster-endpoint
+      Value: !Sub ${Database}.dsql.${AWS::Region}.on.aws
+
+
+Outputs:
+  DatabaseClusterId:
+    Value: !GetAtt DatabaseClusterIdEnvSsm.Value
+  DatabaseClusterEndpoint:
+    Value: !GetAtt DatabaseClusterEndpointEnvSsm.Value
